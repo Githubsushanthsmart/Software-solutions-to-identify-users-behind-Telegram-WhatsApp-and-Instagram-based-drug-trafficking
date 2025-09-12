@@ -12,12 +12,20 @@ import { drugKeywords } from '@/lib/keywords';
 import { createAlertForSuspiciousActivity } from '@/app/actions';
 import { useToast } from '@/hooks/use-toast';
 import { User, SuspiciousLog } from '@/lib/types';
+import { useRouter } from 'next/navigation';
 
 export function ChatInterface() {
   const [newMessage, setNewMessage] = useState('');
   const { currentUser, users, messages, addMessage, addSuspiciousLog } = useAppStore();
   const { toast } = useToast();
   const scrollAreaRef = useRef<HTMLDivElement>(null);
+  const router = useRouter();
+
+  useEffect(() => {
+    if (!currentUser) {
+      router.push('/');
+    }
+  }, [currentUser, router]);
 
   const getUserById = (id: string): User | undefined => users.find(u => u.id === id);
 
@@ -61,14 +69,20 @@ export function ChatInterface() {
         description: "An alert has been sent to the administrator.",
       });
 
-      const { alertMessage } = await createAlertForSuspiciousActivity(log);
-      
-      toast({
-        title: "AI Alert Summary",
-        description: alertMessage,
+      // We don't want to block the UI, so we'll call the AI action without await here
+      // and let it show a toast when it's done.
+      createAlertForSuspiciousActivity(log).then(({ alertMessage }) => {
+        toast({
+          title: "AI Alert Summary",
+          description: alertMessage,
+        });
       });
     }
   };
+
+  if (!currentUser) {
+    return null; // or a loading spinner
+  }
 
   return (
     <div className="flex flex-1 flex-col rounded-lg border bg-card shadow-sm">
