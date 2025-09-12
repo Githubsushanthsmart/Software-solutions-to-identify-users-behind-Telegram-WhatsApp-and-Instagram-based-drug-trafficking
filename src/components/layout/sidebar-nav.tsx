@@ -12,8 +12,7 @@ import {
 const navItems = [
   { href: '/chat', label: 'Chat Simulator', icon: MessageSquare },
   { href: '/admin', label: 'Admin Dashboard', icon: ShieldAlert },
-  // { href: '/features', label: 'Features', icon: FileText },
-  // { href: '/about', label: 'About', icon: Info },
+  { href: '/about', label: 'About', icon: Info },
 ];
 
 export function SidebarNav() {
