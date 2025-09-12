@@ -30,9 +30,9 @@ export function UserForm() {
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      name: '',
-      email: '',
-      phone: '',
+      name: 'Test User',
+      email: 'test.user@example.com',
+      phone: '555-123-4567',
     },
   });
 

@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { MessageSquare, ShieldAlert } from 'lucide-react';
+import { MessageSquare, ShieldAlert, FileText, Info } from 'lucide-react';
 import {
   SidebarMenu,
   SidebarMenuItem,
@@ -12,6 +12,8 @@ import {
 const navItems = [
   { href: '/chat', label: 'Chat Simulator', icon: MessageSquare },
   { href: '/admin', label: 'Admin Dashboard', icon: ShieldAlert },
+  // { href: '/features', label: 'Features', icon: FileText },
+  // { href: '/about', label: 'About', icon: Info },
 ];
 
 export function SidebarNav() {
