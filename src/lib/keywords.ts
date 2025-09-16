@@ -1,5 +1,5 @@
 export const drugKeywords = [
-  "weed", "cocaine", "ganja", "lsd", "molly", "hash", "meth",
+  "drug", "weed", "cocaine", "ganja", "lsd", "molly", "hash", "meth",
   "🌿", "💊", "❄️", "💨", "🍄",
   "pills", "packets", "powder", "cannabis", "score", "connect", "drop",
   "eight ball", "8-ball", "oz", "gram", "kilo"
