@@ -24,10 +24,12 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } f
 export default function MainLayout({ children }: { children: React.ReactNode }) {
   const currentUser = useAppStore((state) => state.currentUser);
   const setCurrentUser = useAppStore((state) => state.setCurrentUser);
+  const clearChat = useAppStore((state) => state.clearChat);
   const router = useRouter();
 
   const handleLogout = () => {
     setCurrentUser(null);
+    clearChat();
     router.push('/');
   };
 

@@ -11,6 +11,7 @@ interface AppState {
   addUser: (user: User) => void;
   addMessage: (message: Message) => void;
   addSuspiciousLog: (log: SuspiciousLog) => void;
+  clearChat: () => void;
 }
 
 export const useAppStore = create<AppState>()(
@@ -28,6 +29,7 @@ export const useAppStore = create<AppState>()(
       addSuspiciousLog: (log) => set((state) => ({
         suspiciousLogs: [...state.suspiciousLogs, log].sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())
       })),
+      clearChat: () => set({ messages: [], suspiciousLogs: [] }),
     }),
     {
       name: 'drugshield-ai-storage', 
