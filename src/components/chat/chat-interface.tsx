@@ -36,14 +36,43 @@ export function ChatInterface() {
     }
   }, [messages]);
   
+  const handleAutoReply = (messageText: string) => {
+    const adminUser = users.find(u => u.id === 'admin');
+    if (!adminUser) return;
+
+    const lowerCaseMessage = messageText.toLowerCase().trim();
+    let replyText: string | null = null;
+
+    if (lowerCaseMessage === 'hi' || lowerCaseMessage === 'hello') {
+      replyText = 'Hello!';
+    } else if (lowerCaseMessage === 'how are you' || lowerCaseMessage === "how are u") {
+      replyText = 'I am fine, thank you! What about you?';
+    }
+
+    if (replyText) {
+      const replyMessage = {
+        id: crypto.randomUUID(),
+        text: replyText,
+        timestamp: new Date().toISOString(),
+        userId: adminUser.id,
+        isSuspicious: false,
+      };
+      
+      setTimeout(() => {
+        addMessage(replyMessage);
+      }, 500);
+    }
+  };
+
   const handleSendMessage = async () => {
     if (!newMessage.trim() || !currentUser) return;
 
-    const isSuspicious = drugKeywords.some(keyword => newMessage.toLowerCase().includes(keyword));
+    const messageText = newMessage;
+    const isSuspicious = drugKeywords.some(keyword => messageText.toLowerCase().includes(keyword));
     
     const message = {
       id: crypto.randomUUID(),
-      text: newMessage,
+      text: messageText,
       timestamp: new Date().toISOString(),
       userId: currentUser.id,
       isSuspicious,
@@ -77,6 +106,8 @@ export function ChatInterface() {
           description: alertMessage,
         });
       });
+    } else {
+        handleAutoReply(messageText);
     }
   };
 
