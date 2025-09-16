@@ -1,8 +1,14 @@
 import { Logo } from '@/components/icons/logo';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardHeader } from '@/components/ui/card';
 import { BrainCircuit, ShieldCheck, Siren } from 'lucide-react';
 import Link from 'next/link';
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from '@/components/ui/accordion';
 
 export default function Home() {
   return (
@@ -47,29 +53,50 @@ export default function Home() {
             <h2 className="text-4xl font-bold tracking-tight">How DrugShield AI Works</h2>
             <p className="mt-4 text-lg text-muted-foreground">Our intelligent system uses a multi-layered approach to keep platforms safe.</p>
           </div>
-          <div className="grid gap-8 md:grid-cols-3">
-            <Card className="bg-card/50 backdrop-blur-sm">
-              <CardHeader className="items-center text-center">
-                <BrainCircuit className="size-12 text-primary mb-4" />
-                <CardTitle>NLP & Image Detection</CardTitle>
-                <CardDescription>Advanced AI models analyze text for drug-related slang and scan images for illicit substances, flagging suspicious content in real-time.</CardDescription>
-              </CardHeader>
-            </Card>
-            <Card className="bg-card/50 backdrop-blur-sm">
-              <CardHeader className="items-center text-center">
-                <Siren className="size-12 text-primary mb-4" />
-                <CardTitle>Real-Time Alert System</CardTitle>
-                <CardDescription>Instantaneously generates alerts for administrators when suspicious activity is detected, enabling rapid response and intervention.</CardDescription>
-              </CardHeader>
-            </Card>
-            <Card className="bg-card/50 backdrop-blur-sm">
-              <CardHeader className="items-center text-center">
-                <ShieldCheck className="size-12 text-primary mb-4" />
-                <CardTitle>Secure & Private</CardTitle>
-                <CardDescription>All data is securely stored in a private database. User privacy is maintained while ensuring platform safety and integrity.</CardDescription>
-              </CardHeader>
-            </Card>
-          </div>
+          <Accordion type="single" collapsible className="w-full max-w-3xl mx-auto">
+            <AccordionItem value="item-1">
+              <AccordionTrigger>
+                <CardHeader className="flex-row items-center gap-4 p-0">
+                  <BrainCircuit className="size-10 text-primary" />
+                  <div className="text-left">
+                    <h3 className="text-lg font-semibold">NLP & Image Detection</h3>
+                    <p className="text-sm text-muted-foreground">Real-time content analysis for text and images.</p>
+                  </div>
+                </CardHeader>
+              </AccordionTrigger>
+              <AccordionContent className="text-muted-foreground pl-16">
+                Our system employs advanced AI models to perform deep analysis of all content in real time. It understands drug-related slang, code words, and suspicious terminology through Natural Language Processing. Simultaneously, our computer vision algorithms scan images for illicit substances, paraphernalia, and hand signals associated with drug deals.
+              </AccordionContent>
+            </AccordionItem>
+            <AccordionItem value="item-2">
+              <AccordionTrigger>
+                <CardHeader className="flex-row items-center gap-4 p-0">
+                  <Siren className="size-10 text-primary" />
+                   <div className="text-left">
+                    <h3 className="text-lg font-semibold">Real-Time Alert System</h3>
+                    <p className="text-sm text-muted-foreground">Instant notifications for rapid response.</p>
+                  </div>
+                </CardHeader>
+              </AccordionTrigger>
+              <AccordionContent className="text-muted-foreground pl-16">
+                When a potential threat is identified, DrugShield AI instantaneously generates an alert for platform administrators. These alerts are prioritized by a confidence score, allowing moderators to address the most critical issues first. The system provides a detailed report, including the flagged content and user information, to enable swift and decisive action.
+              </AccordionContent>
+            </AccordionItem>
+            <AccordionItem value="item-3">
+              <AccordionTrigger>
+                <CardHeader className="flex-row items-center gap-4 p-0">
+                  <ShieldCheck className="size-10 text-primary" />
+                  <div className="text-left">
+                    <h3 className="text-lg font-semibold">Secure & Private</h3>
+                    <p className="text-sm text-muted-foreground">Encrypted data storage with user privacy in mind.</p>
+                  </div>
+                </CardHeader>
+              </AccordionTrigger>
+              <AccordionContent className="text-muted-foreground pl-16">
+                All flagged content and associated metadata are securely logged in an encrypted database. We prioritize user privacy by focusing only on publicly available data within the platform and ensuring that access to the alert logs is restricted to authorized administrators. Our goal is to maintain platform integrity without compromising user confidentiality.
+              </AccordionContent>
+            </AccordionItem>
+          </Accordion>
         </section>
 
       </main>
