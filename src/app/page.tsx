@@ -65,7 +65,10 @@ export default function Home() {
                 </CardHeader>
               </AccordionTrigger>
               <AccordionContent className="text-muted-foreground pl-16">
-                Our system employs advanced AI models to perform deep analysis of all content in real time. It understands drug-related slang, code words, and suspicious terminology through Natural Language Processing. Simultaneously, our computer vision algorithms scan images for illicit substances, paraphernalia, and hand signals associated with drug deals.
+                <p>Our system employs advanced AI models to perform deep analysis of all content in real time. It understands drug-related slang, code words, and suspicious terminology through Natural Language Processing. Simultaneously, our computer vision algorithms scan images for illicit substances, paraphernalia, and hand signals associated with drug deals.</p>
+                <Button variant="link" asChild className="p-0 h-auto mt-2">
+                  <Link href="/chat">Learn More</Link>
+                </Button>
               </AccordionContent>
             </AccordionItem>
             <AccordionItem value="item-2">
@@ -79,7 +82,10 @@ export default function Home() {
                 </CardHeader>
               </AccordionTrigger>
               <AccordionContent className="text-muted-foreground pl-16">
-                When a potential threat is identified, DrugShield AI instantaneously generates an alert for platform administrators. These alerts are prioritized by a confidence score, allowing moderators to address the most critical issues first. The system provides a detailed report, including the flagged content and user information, to enable swift and decisive action.
+                <p>When a potential threat is identified, DrugShield AI instantaneously generates an alert for platform administrators. These alerts are prioritized by a confidence score, allowing moderators to address the most critical issues first. The system provides a detailed report, including the flagged content and user information, to enable swift and decisive action.</p>
+                 <Button variant="link" asChild className="p-0 h-auto mt-2">
+                  <Link href="/admin">Learn More</Link>
+                </Button>
               </AccordionContent>
             </AccordionItem>
             <AccordionItem value="item-3">
@@ -93,7 +99,10 @@ export default function Home() {
                 </CardHeader>
               </AccordionTrigger>
               <AccordionContent className="text-muted-foreground pl-16">
-                All flagged content and associated metadata are securely logged in an encrypted database. We prioritize user privacy by focusing only on publicly available data within the platform and ensuring that access to the alert logs is restricted to authorized administrators. Our goal is to maintain platform integrity without compromising user confidentiality.
+                <p>All flagged content and associated metadata are securely logged in an encrypted database. We prioritize user privacy by focusing only on publicly available data within the platform and ensuring that access to the alert logs is restricted to authorized administrators. Our goal is to maintain platform integrity without compromising user confidentiality.</p>
+                 <Button variant="link" asChild className="p-0 h-auto mt-2">
+                  <Link href="/admin">Learn More</Link>
+                </Button>
               </AccordionContent>
             </AccordionItem>
           </Accordion>
