@@ -36,19 +36,14 @@ const generateAlertMessagePrompt = ai.definePrompt({
   name: 'generateAlertMessagePrompt',
   input: {schema: GenerateAlertMessageInputSchema},
   output: {schema: GenerateAlertMessageOutputSchema},
-  prompt: `A suspicious message has been detected on the ChatSecure AI platform.
-
-  User Details:
-  - Name: {{{userName}}}
-  - Email: {{{userEmail}}}
-  - Phone: {{{userPhone}}}
+  prompt: `A suspicious message has been detected from user: {{{userName}}}.
 
   Message Details:
   - Content: {{{messageContent}}}
-  - Confidence Score: {{{confidenceScore}}}
+  - Confidence Score: {{{confidenceScore}}}%
   - Timestamp: {{{timestamp}}}
 
-  Generate a concise alert message summarizing the above information for an administrator. Focus on the most critical details indicating potential illegal activity. The message should clearly and urgently convey the need for review.
+  Generate a direct and urgent alert message for an administrator stating that "{{{userName}}}" is involved in suspicious drug-related activity. For example: "Urgent: Suspicious drug-related activity detected from user {{{userName}}}."
   `,
 });
 
