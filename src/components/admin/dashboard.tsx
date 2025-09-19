@@ -14,7 +14,7 @@ import { Input } from '@/components/ui/input';
 import { useAppStore } from '@/lib/store';
 import { format, parseISO } from 'date-fns';
 import { cn } from '@/lib/utils';
-import { AlertTriangle, Calendar, Search, Image as ImageIcon } from 'lucide-react';
+import { AlertTriangle, Calendar, Search, Image as ImageIcon, Mic } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import Image from 'next/image';
 
@@ -25,14 +25,20 @@ export function Dashboard() {
 
   const textLogs = useMemo(() => suspiciousLogs.filter(log => log.message), [suspiciousLogs]);
   const imageLogs = useMemo(() => suspiciousLogs.filter(log => log.imageUrl), [suspiciousLogs]);
+  const audioLogs = useMemo(() => suspiciousLogs.filter(log => log.audioUrl), [suspiciousLogs]);
 
-  const filteredTextLogs = useMemo(() => {
-    return textLogs.filter((log) => {
+  const filterLogs = (logs: any[], keys: string[]) => {
+     return logs.filter((log) => {
       const lowerCaseSearchTerm = searchTerm.toLowerCase();
-      const matchesSearch =
-        log.user.name.toLowerCase().includes(lowerCaseSearchTerm) ||
-        log.user.email.toLowerCase().includes(lowerCaseSearchTerm) ||
-        (log.message && log.message.toLowerCase().includes(lowerCaseSearchTerm));
+      
+      const matchesSearch = keys.some(key => {
+        const value = log[key];
+        if (typeof value === 'string') {
+          return value.toLowerCase().includes(lowerCaseSearchTerm);
+        }
+        return false;
+      }) || log.user.name.toLowerCase().includes(lowerCaseSearchTerm) ||
+             log.user.email.toLowerCase().includes(lowerCaseSearchTerm);
 
       const matchesDate = dateFilter
         ? format(parseISO(log.timestamp), 'yyyy-MM-dd') === dateFilter
@@ -40,29 +46,22 @@ export function Dashboard() {
 
       return matchesSearch && matchesDate;
     });
-  }, [textLogs, searchTerm, dateFilter]);
-  
-  const filteredImageLogs = useMemo(() => {
-    return imageLogs.filter((log) => {
-      const lowerCaseSearchTerm = searchTerm.toLowerCase();
-      const matchesSearch =
-        log.user.name.toLowerCase().includes(lowerCaseSearchTerm) ||
-        log.user.email.toLowerCase().includes(lowerCaseSearchTerm) ||
-        (log.category && log.category.toLowerCase().includes(lowerCaseSearchTerm));
+  }
 
-      const matchesDate = dateFilter
-        ? format(parseISO(log.timestamp), 'yyyy-MM-dd') === dateFilter
-        : true;
-
-      return matchesSearch && matchesDate;
-    });
-  }, [imageLogs, searchTerm, dateFilter]);
+  const filteredTextLogs = useMemo(() => filterLogs(textLogs, ['message']), [textLogs, searchTerm, dateFilter]);
+  const filteredImageLogs = useMemo(() => filterLogs(imageLogs, ['category']), [imageLogs, searchTerm, dateFilter]);
+  const filteredAudioLogs = useMemo(() => filterLogs(audioLogs, ['transcription']), [audioLogs, searchTerm, dateFilter]);
 
   const getConfidenceBadgeColor = (score: number) => {
     if (score > 0.9) return 'bg-red-500';
     if (score > 0.8) return 'bg-orange-500';
     return 'bg-yellow-500';
   };
+  
+  const getConfidencePercentage = (score: number) => {
+    // text log scores are 0-100, image/audio are 0-1
+    return score > 1 ? score : Math.round(score * 100);
+  }
 
   return (
     <Card className="flex-1">
@@ -101,7 +100,7 @@ export function Dashboard() {
       </CardHeader>
       <CardContent>
         <Tabs defaultValue="text">
-          <TabsList className="grid w-full grid-cols-2">
+          <TabsList className="grid w-full grid-cols-3">
             <TabsTrigger value="text">
                 <AlertTriangle className="mr-2 size-4" />
                 Text Logs
@@ -109,6 +108,10 @@ export function Dashboard() {
             <TabsTrigger value="images">
                 <ImageIcon className="mr-2 size-4" />
                 Image Logs
+            </TabsTrigger>
+             <TabsTrigger value="audio">
+                <Mic className="mr-2 size-4" />
+                Audio Logs
             </TabsTrigger>
           </TabsList>
           <TabsContent value="text" className="mt-4">
@@ -186,10 +189,10 @@ export function Dashboard() {
                         <TableCell>{format(parseISO(log.timestamp), 'MMM d, yyyy, h:mm a')}</TableCell>
                         <TableCell className="text-right">
                           <div className="flex items-center justify-end gap-2">
-                            <div className="w-16 h-2 bg-muted rounded-full">
-                              <div className={cn("h-2 rounded-full", getConfidenceBadgeColor(log.confidenceScore))} style={{width: `${log.confidenceScore * 100}%`}}/>
+                             <div className="w-16 h-2 bg-muted rounded-full">
+                              <div className={cn("h-2 rounded-full", getConfidenceBadgeColor(log.confidenceScore))} style={{width: `${getConfidencePercentage(log.confidenceScore)}%`}}/>
                             </div>
-                            <span className="font-mono text-sm font-semibold">{Math.round(log.confidenceScore * 100)}%</span>
+                            <span className="font-mono text-sm font-semibold">{getConfidencePercentage(log.confidenceScore)}%</span>
                           </div>
                         </TableCell>
                       </TableRow>
@@ -198,6 +201,57 @@ export function Dashboard() {
                     <TableRow>
                       <TableCell colSpan={5} className="h-24 text-center">
                         No suspicious image logs found.
+                      </TableCell>
+                    </TableRow>
+                  )}
+                </TableBody>
+              </Table>
+            </div>
+          </TabsContent>
+           <TabsContent value="audio" className="mt-4">
+             <div className="overflow-auto rounded-md border">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>User</TableHead>
+                    <TableHead>Audio</TableHead>
+                    <TableHead>Transcription</TableHead>
+                    <TableHead>Timestamp</TableHead>
+                    <TableHead className="text-right">Confidence</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {filteredAudioLogs.length > 0 ? (
+                    filteredAudioLogs.map((log) => (
+                      <TableRow key={log.id}>
+                        <TableCell>
+                          <div className="font-medium">{log.user.name}</div>
+                          <div className="text-sm text-muted-foreground">{log.user.email}</div>
+                          <div className="text-sm text-muted-foreground">{log.user.phone}</div>
+                        </TableCell>
+                        <TableCell>
+                          {log.audioUrl && (
+                             <audio controls src={log.audioUrl} className="w-64" />
+                          )}
+                        </TableCell>
+                        <TableCell>
+                            <p className="max-w-xs truncate italic">"{log.transcription}"</p>
+                        </TableCell>
+                        <TableCell>{format(parseISO(log.timestamp), 'MMM d, yyyy, h:mm a')}</TableCell>
+                        <TableCell className="text-right">
+                          <div className="flex items-center justify-end gap-2">
+                             <div className="w-16 h-2 bg-muted rounded-full">
+                              <div className={cn("h-2 rounded-full", getConfidenceBadgeColor(log.confidenceScore))} style={{width: `${getConfidencePercentage(log.confidenceScore)}%`}}/>
+                            </div>
+                            <span className="font-mono text-sm font-semibold">{getConfidencePercentage(log.confidenceScore)}%</span>
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    ))
+                  ) : (
+                    <TableRow>
+                      <TableCell colSpan={5} className="h-24 text-center">
+                        No suspicious audio logs found.
                       </TableCell>
                     </TableRow>
                   )}

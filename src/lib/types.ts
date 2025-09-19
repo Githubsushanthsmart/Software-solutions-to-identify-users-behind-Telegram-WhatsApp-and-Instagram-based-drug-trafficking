@@ -11,12 +11,14 @@ export type User = {
 
 export type Message = {
   id: string;
-  text?: string; // Text is now optional for image messages
-  imageUrl?: string; // For image messages
+  text?: string;
+  imageUrl?: string;
+  audioUrl?: string; // For audio messages
   timestamp: string;
   userId: string;
   isSuspicious?: boolean;
-  suspicionCategory?: string; // e.g., NSFW, Violence
+  suspicionCategory?: string;
+  transcription?: string; // For audio messages
 };
 
 export type SuspiciousLog = {
@@ -24,7 +26,9 @@ export type SuspiciousLog = {
   user: User;
   message?: string;
   imageUrl?: string;
+  audioUrl?: string;
+  transcription?: string;
   timestamp: string;
   confidenceScore: number;
-  category?: string; // For image analysis
+  category?: string;
 };

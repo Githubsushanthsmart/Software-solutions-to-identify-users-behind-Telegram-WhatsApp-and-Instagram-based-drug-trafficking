@@ -7,10 +7,10 @@ import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useAppStore } from '@/lib/store';
 import { cn } from '@/lib/utils';
-import { SendHorizonal, AlertTriangle, Paperclip, X, Loader2 } from 'lucide-react';
-import { drugKeywords } from '@/lib/keywords';
+import { SendHorizonal, AlertTriangle, Paperclip, X, Loader2, Mic, StopCircle, Trash2 } from 'lucide-react';
 import { createAlertForSuspiciousActivity } from '@/app/actions';
 import { analyzeImage } from '@/ai/flows/analyze-image-flow';
+import { analyzeAudio } from '@/ai/flows/analyze-audio-flow';
 import { useToast } from '@/hooks/use-toast';
 import { User, SuspiciousLog, Message } from '@/lib/types';
 import { useRouter } from 'next/navigation';
@@ -21,6 +21,11 @@ export function ChatInterface() {
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [isRecording, setIsRecording] = useState(false);
+  const [audioBlob, setAudioBlob] = useState<Blob | null>(null);
+  const [audioUrl, setAudioUrl] = useState<string | null>(null);
+  const mediaRecorderRef = useRef<MediaRecorder | null>(null);
+  
   const { currentUser, users, messages, addMessage, addSuspiciousLog } = useAppStore();
   const { toast } = useToast();
   const scrollAreaRef = useRef<HTMLDivElement>(null);
@@ -40,7 +45,7 @@ export function ChatInterface() {
     if (viewport) {
       viewport.scrollTo({ top: viewport.scrollHeight, behavior: 'smooth' });
     }
-  }, [messages]);
+  }, [messages, isAnalyzing]);
   
   const handleAutoReply = (messageText: string) => {
     const adminUser = users.find(u => u.id === 'admin');
@@ -89,12 +94,54 @@ export function ChatInterface() {
       fileInputRef.current.value = "";
     }
   };
+  
+  const clearAudio = () => {
+    setAudioBlob(null);
+    setAudioUrl(null);
+  }
 
+  const startRecording = async () => {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      mediaRecorderRef.current = new MediaRecorder(stream);
+      const chunks: BlobPart[] = [];
+      
+      mediaRecorderRef.current.ondataavailable = (event) => {
+        chunks.push(event.data);
+      };
+
+      mediaRecorderRef.current.onstop = () => {
+        const blob = new Blob(chunks, { type: 'audio/wav' });
+        setAudioBlob(blob);
+        const url = URL.createObjectURL(blob);
+        setAudioUrl(url);
+        stream.getTracks().forEach(track => track.stop());
+      };
+
+      mediaRecorderRef.current.start();
+      setIsRecording(true);
+    } catch (error) {
+      console.error("Error starting recording:", error);
+      toast({ title: "Recording Error", description: "Could not start audio recording. Please check microphone permissions."});
+    }
+  };
+
+  const stopRecording = () => {
+    if (mediaRecorderRef.current && isRecording) {
+      mediaRecorderRef.current.stop();
+      setIsRecording(false);
+    }
+  };
+  
   const handleSendMessage = async () => {
-    if ((!newMessage.trim() && !imageFile) || !currentUser) return;
+    if ((!newMessage.trim() && !imageFile && !audioBlob) || !currentUser) return;
     
     if (imageFile && imagePreview) {
       await handleSendImageMessage(imagePreview);
+    }
+    
+    if (audioBlob) {
+      await handleSendAudioMessage();
     }
 
     if (newMessage.trim()) {
@@ -103,12 +150,15 @@ export function ChatInterface() {
 
     setNewMessage('');
     clearImagePreview();
+    clearAudio();
   };
 
   const handleSendTextMessage = async (text: string) => {
     if (!currentUser) return;
 
-    const isSuspicious = drugKeywords.some(keyword => text.toLowerCase().includes(keyword));
+    // This is a mock analysis for text messages
+    const isSuspicious = (text.toLowerCase().includes("buy") && text.toLowerCase().includes("drugs"))
+      || text.toLowerCase().includes("pills");
     
     const message: Message = {
       id: crypto.randomUUID(),
@@ -184,6 +234,53 @@ export function ChatInterface() {
       });
     }
   };
+  
+  const blobToDataUrl = (blob: Blob): Promise<string> => {
+    return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onloadend = () => resolve(reader.result as string);
+        reader.onerror = reject;
+        reader.readAsDataURL(blob);
+    });
+  }
+  
+  const handleSendAudioMessage = async () => {
+    if (!audioBlob || !currentUser) return;
+    setIsAnalyzing(true);
+    
+    const audioDataUri = await blobToDataUrl(audioBlob);
+    const analysis = await analyzeAudio({ audioDataUri });
+    
+    const message: Message = {
+      id: crypto.randomUUID(),
+      audioUrl: audioDataUri,
+      timestamp: new Date().toISOString(),
+      userId: currentUser.id,
+      isSuspicious: analysis.isSuspicious,
+      transcription: analysis.transcription,
+    };
+    
+    addMessage(message);
+    setIsAnalyzing(false);
+
+    if (analysis.isSuspicious) {
+      const log: SuspiciousLog = {
+        id: message.id,
+        user: currentUser,
+        audioUrl: audioDataUri,
+        timestamp: message.timestamp,
+        confidenceScore: analysis.confidenceScore,
+        transcription: analysis.transcription
+      };
+      addSuspiciousLog(log);
+      
+      toast({
+        variant: "destructive",
+        title: "Suspicious Audio Detected",
+        description: "This audio message has been flagged for review.",
+      });
+    }
+  };
 
 
   if (!currentUser) {
@@ -214,19 +311,28 @@ export function ChatInterface() {
                      msg.isSuspicious && 'border-2 border-destructive'
                   )}
                 >
-                  {msg.imageUrl ? (
+                  {msg.imageUrl && (
                     <Image src={msg.imageUrl} alt="Chat image" width={250} height={250} className="rounded-md object-cover" />
-                  ) : (
+                  )}
+                  {msg.text && (
                     <p className="text-sm p-1">{msg.text}</p>
                   )}
-                   {(msg.isSuspicious) && (
+                  {msg.audioUrl && (
+                     <audio controls src={msg.audioUrl} className="w-full" />
+                  )}
+                  {msg.isSuspicious && (
                     <div className="mt-2 flex items-center gap-1 pt-1 border-t border-destructive/20 px-1">
                       <AlertTriangle className="h-3 w-3 text-destructive" />
                       <span className="text-xs font-semibold text-destructive">
-                        Flagged{msg.suspicionCategory && `: ${msg.suspicionCategory}`}
+                        Flagged{msg.suspicionCategory ? `: ${msg.suspicionCategory}`: ''}
                       </span>
                     </div>
                   )}
+                   {msg.isSuspicious && msg.transcription && (
+                      <p className="text-xs text-destructive/80 italic pt-1 border-t border-destructive/20 mt-2 px-1">
+                        "{msg.transcription}"
+                      </p>
+                   )}
                 </div>
                  {isCurrentUser && (
                   <Avatar className="h-8 w-8 self-end">
@@ -239,7 +345,7 @@ export function ChatInterface() {
           {isAnalyzing && (
              <div className="flex items-center gap-2 justify-center">
                 <Loader2 className="h-4 w-4 animate-spin text-muted-foreground"/>
-                <p className="text-sm text-muted-foreground">Analyzing image...</p>
+                <p className="text-sm text-muted-foreground">Analyzing...</p>
             </div>
           )}
         </div>
@@ -253,22 +359,41 @@ export function ChatInterface() {
             </Button>
           </div>
         )}
+        {audioUrl && (
+            <div className="flex items-center gap-2 mb-2 p-2 rounded-lg bg-muted">
+                <audio controls src={audioUrl} className="flex-1" />
+                <Button size="icon" variant="ghost" onClick={clearAudio}>
+                    <Trash2 className="size-4" />
+                </Button>
+            </div>
+        )}
         <div className="relative">
           <Input
-            placeholder="Type a message..."
+            placeholder={isRecording ? "Recording..." : "Type a message..."}
             value={newMessage}
             onChange={(e) => setNewMessage(e.target.value)}
             onKeyDown={(e) => e.key === 'Enter' && !e.shiftKey && handleSendMessage()}
-            className="pr-24"
-            disabled={isAnalyzing}
+            className="pr-32"
+            disabled={isAnalyzing || isRecording || !!imagePreview || !!audioUrl}
           />
           <div className="absolute right-1 top-1/2 flex h-8 -translate-y-1/2">
             <Button
               type="button"
               size="icon"
               variant="ghost"
+              onClick={isRecording ? stopRecording : startRecording}
+              disabled={isAnalyzing || !!imagePreview || !!newMessage}
+              className={cn(isRecording && "text-red-500 hover:text-red-600")}
+            >
+              {isRecording ? <StopCircle className="h-4 w-4" /> : <Mic className="h-4 w-4" />}
+              <span className="sr-only">{isRecording ? 'Stop recording' : 'Start recording'}</span>
+            </Button>
+            <Button
+              type="button"
+              size="icon"
+              variant="ghost"
               onClick={() => fileInputRef.current?.click()}
-              disabled={isAnalyzing}
+              disabled={isAnalyzing || isRecording || !!audioUrl}
             >
               <Paperclip className="h-4 w-4" />
               <span className="sr-only">Attach image</span>
@@ -278,7 +403,7 @@ export function ChatInterface() {
               type="submit"
               size="icon"
               onClick={handleSendMessage}
-              disabled={(!newMessage.trim() && !imageFile) || isAnalyzing}
+              disabled={(!newMessage.trim() && !imageFile && !audioBlob) || isAnalyzing || isRecording}
             >
               {isAnalyzing ? <Loader2 className="h-4 w-4 animate-spin"/> : <SendHorizonal className="h-4 w-4" />}
               <span className="sr-only">Send</span>
