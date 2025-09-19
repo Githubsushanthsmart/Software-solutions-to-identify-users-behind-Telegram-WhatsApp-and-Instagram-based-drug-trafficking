@@ -10,11 +10,11 @@ import {
 import { MapPin } from "lucide-react";
 
 const locations = [
-  { name: "Mumbai", lat: 19.0760, lon: 72.8777, top: "70%", left: "28%" },
-  { name: "Hyderabad", lat: 17.3850, lon: 78.4867, top: "77%", left: "42%" },
-  { name: "Goa", lat: 15.2993, lon: 74.1240, top: "80%", left: "32%" },
-  { name: "Bihar", lat: 25.5941, lon: 85.1376, top: "50%", left: "58%" },
-  { name: "Sikkim", lat: 27.3389, lon: 88.6065, top: "45%", left: "65%" },
+  { name: "Mumbai", lat: 19.0760, lon: 72.8777, top: "83%", left: "26%" },
+  { name: "Hyderabad", lat: 17.3850, lon: 78.4867, top: "80%", left: "42%" },
+  { name: "Goa", lat: 15.2993, lon: 74.1240, top: "85%", left: "31%" },
+  { name: "Bihar", lat: 25.5941, lon: 85.1376, top: "54%", left: "59%" },
+  { name: "Sikkim", lat: 27.3389, lon: 88.6065, top: "49%", left: "67%" },
 ];
 
 export function StaticMap() {
@@ -23,11 +23,11 @@ export function StaticMap() {
       <CardContent className="p-2 h-full">
         <div className="relative w-full h-[calc(100vh-14rem)]">
           <Image
-            src="https://picsum.photos/seed/indiamap/1200/900"
-            alt="Outline map of India with states"
+            src="https://i.imgur.com/79rD4s2.jpeg"
+            alt="Detailed map of India with states and cities"
             fill
             className="object-cover rounded-md"
-            data-ai-hint="india map outline states"
+            data-ai-hint="india map states"
           />
           {locations.map((loc) => (
             <Tooltip key={loc.name}>
