@@ -7,7 +7,6 @@ import { Card } from '@/components/ui/card';
 import { format, parseISO } from 'date-fns';
 import L from 'leaflet';
 
-// Custom icon for the markers
 const redIcon = new L.Icon({
   iconUrl: 'https://unpkg.com/leaflet@1.7.1/dist/images/marker-icon-2x-red.png',
   shadowUrl: 'https://unpkg.com/leaflet@1.7.1/dist/images/marker-shadow.png',
@@ -17,11 +16,9 @@ const redIcon = new L.Icon({
   shadowSize: [41, 41],
 });
 
-export function LiveMap() {
+export default function LiveMap() {
   const suspiciousLogs = useAppStore((state) => state.suspiciousLogs);
-
-  // Default center for the map if no logs are present
-  const defaultCenter: [number, number] = [20.5937, 78.9629]; // India
+  const defaultCenter: [number, number] = [20.5937, 78.9629];
 
   const mapCenter = suspiciousLogs.length > 0 && suspiciousLogs[0].user.location
     ? [suspiciousLogs[0].user.location.latitude, suspiciousLogs[0].user.location.longitude] as [number, number]
@@ -34,12 +31,9 @@ export function LiveMap() {
           url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>'
         />
-
         {suspiciousLogs.map((log) => {
             if (!log.user.location) return null;
-            
             const position: [number, number] = [log.user.location.latitude, log.user.location.longitude];
-
             return (
               <Marker key={log.id} position={position} icon={redIcon}>
                 <Popup>
