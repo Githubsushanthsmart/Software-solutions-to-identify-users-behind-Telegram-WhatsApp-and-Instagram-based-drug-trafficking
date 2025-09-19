@@ -254,7 +254,7 @@ export function ChatInterface() {
     const message: Message = {
       id: crypto.randomUUID(),
       audioUrl: audioDataUri,
-      timestamp: newtoISOString(),
+      timestamp: new Date().toISOString(),
       userId: currentUser.id,
       isSuspicious: analysis.isSuspicious,
       transcription: analysis.transcription,
@@ -287,9 +287,11 @@ export function ChatInterface() {
     return null; // or a loading spinner
   }
 
+  const isBanned = currentUser.status === 'banned';
+
   return (
     <div className="flex flex-1 flex-col rounded-lg border bg-card shadow-sm relative">
-      {currentUser.status === 'banned' && (
+      {isBanned && (
         <div className="absolute inset-0 z-10 flex flex-col items-center justify-center gap-4 bg-background/90 backdrop-blur-sm">
           <ShieldBan className="size-24 text-red-500 animate-pulse" />
           <div className="text-center">
@@ -306,13 +308,13 @@ export function ChatInterface() {
         <div className="space-y-4">
           {messages.map((msg) => {
             const user = getUserById(msg.userId);
-            const isCurrentUser = msg.userId === currentUser?.id;
+            const isCurrentUserMsg = msg.userId === currentUser?.id;
             return (
               <div
                 key={msg.id}
-                className={cn('flex items-end gap-2', isCurrentUser ? 'justify-end' : 'justify-start')}
+                className={cn('flex items-end gap-2', isCurrentUserMsg ? 'justify-end' : 'justify-start')}
               >
-                {!isCurrentUser && (
+                {!isCurrentUserMsg && (
                   <Avatar className="h-8 w-8 self-end">
                     <AvatarFallback>{user?.name.charAt(0).toUpperCase()}</AvatarFallback>
                   </Avatar>
@@ -320,7 +322,7 @@ export function ChatInterface() {
                 <div
                   className={cn(
                     'max-w-xs rounded-lg p-2 md:max-w-md',
-                    isCurrentUser ? 'bg-primary text-primary-foreground' : 'bg-muted',
+                    isCurrentUserMsg ? 'bg-primary text-primary-foreground' : 'bg-muted',
                      msg.isSuspicious && 'border-2 border-destructive'
                   )}
                 >
@@ -347,7 +349,7 @@ export function ChatInterface() {
                       </p>
                    )}
                 </div>
-                 {isCurrentUser && (
+                 {isCurrentUserMsg && (
                   <Avatar className="h-8 w-8 self-end">
                     <AvatarFallback>{user?.name.charAt(0).toUpperCase()}</AvatarFallback>
                   </Avatar>
@@ -387,7 +389,7 @@ export function ChatInterface() {
             onChange={(e) => setNewMessage(e.target.value)}
             onKeyDown={(e) => e.key === 'Enter' && !e.shiftKey && handleSendMessage()}
             className="pr-32"
-            disabled={isAnalyzing || isRecording || !!imagePreview || !!audioUrl || currentUser.status === 'banned'}
+            disabled={isAnalyzing || isRecording || !!imagePreview || !!audioUrl || isBanned}
           />
           <div className="absolute right-1 top-1/2 flex h-8 -translate-y-1/2">
             <Button
@@ -395,7 +397,7 @@ export function ChatInterface() {
               size="icon"
               variant="ghost"
               onClick={isRecording ? stopRecording : startRecording}
-              disabled={isAnalyzing || !!imagePreview || !!newMessage || currentUser.status === 'banned'}
+              disabled={isAnalyzing || !!imagePreview || !!newMessage || isBanned}
               className={cn(isRecording && "text-red-500 hover:text-red-600")}
             >
               {isRecording ? <StopCircle className="h-4 w-4" /> : <Mic className="h-4 w-4" />}
@@ -406,7 +408,7 @@ export function ChatInterface() {
               size="icon"
               variant="ghost"
               onClick={() => fileInputRef.current?.click()}
-              disabled={isAnalyzing || isRecording || !!audioUrl || currentUser.status === 'banned'}
+              disabled={isAnalyzing || isRecording || !!audioUrl || isBanned}
             >
               <Paperclip className="h-4 w-4" />
               <span className="sr-only">Attach image</span>
@@ -416,7 +418,7 @@ export function ChatInterface() {
               type="submit"
               size="icon"
               onClick={handleSendMessage}
-              disabled={(!newMessage.trim() && !imageFile && !audioBlob) || isAnalyzing || isRecording || currentUser.status === 'banned'}
+              disabled={(!newMessage.trim() && !imageFile && !audioBlob) || isAnalyzing || isRecording || isBanned}
             >
               {isAnalyzing ? <Loader2 className="h-4 w-4 animate-spin"/> : <SendHorizonal className="h-4 w-4" />}
               <span className="sr-only">Send</span>

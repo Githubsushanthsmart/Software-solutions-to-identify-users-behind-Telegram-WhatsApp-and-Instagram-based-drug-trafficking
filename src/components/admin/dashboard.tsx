@@ -15,7 +15,7 @@ import { Input } from '@/components/ui/input';
 import { useAppStore } from '@/lib/store';
 import { format, parseISO } from 'date-fns';
 import { cn } from '@/lib/utils';
-import { AlertTriangle, Calendar, Search, Image as ImageIcon, Mic, User as UserIcon, ShieldBan } from 'lucide-react';
+import { AlertTriangle, Calendar, Search, Image as ImageIcon, Mic, User as UserIcon, ShieldBan, ShieldCheck } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import Image from 'next/image';
 import { User } from '@/lib/types';
@@ -24,7 +24,7 @@ import { Badge } from '../ui/badge';
 import { useToast } from '@/hooks/use-toast';
 
 export function Dashboard() {
-  const { suspiciousLogs, banUser, users } = useAppStore();
+  const { suspiciousLogs, banUser, unbanUser, users } = useAppStore();
   const [searchTerm, setSearchTerm] = useState('');
   const [dateFilter, setDateFilter] = useState('');
   const { toast } = useToast();
@@ -51,16 +51,25 @@ export function Dashboard() {
       .slice(0, 5);
   }, [suspiciousLogs]);
   
-  const handleBanUser = (user: User) => {
+  const handleToggleBanUser = (user: User) => {
     if (user.id === 'admin') {
       toast({ variant: 'destructive', title: 'Error', description: 'Cannot ban an admin user.' });
       return;
     }
-    banUser(user.id);
-    toast({
-      title: 'User Banned',
-      description: `${user.name} has been suspended and can no longer send messages.`,
-    });
+    
+    if (user.status === 'banned') {
+      unbanUser(user.id);
+      toast({
+        title: 'User Unbanned',
+        description: `${user.name} has been reinstated and can send messages again.`,
+      });
+    } else {
+      banUser(user.id);
+      toast({
+        title: 'User Banned',
+        description: `${user.name} has been suspended and can no longer send messages.`,
+      });
+    }
   }
 
   const filterLogs = (logs: any[], keys: string[]) => {
@@ -114,14 +123,14 @@ export function Dashboard() {
                 <Badge variant="secondary">Active</Badge>
             )}
             <Button 
-                variant="destructive" 
+                variant={fullUser.status === 'banned' ? 'secondary' : 'destructive'}
                 size="sm" 
                 className="h-7"
-                onClick={() => handleBanUser(fullUser)}
-                disabled={fullUser.status === 'banned'}
+                onClick={() => handleToggleBanUser(fullUser)}
+                disabled={fullUser.id === 'admin'}
             >
-                <ShieldBan className="mr-1 size-3"/>
-                Ban User
+                {fullUser.status === 'banned' ? <ShieldCheck className="mr-1 size-3"/> : <ShieldBan className="mr-1 size-3"/>}
+                {fullUser.status === 'banned' ? 'Unban' : 'Ban'}
             </Button>
         </div>
       </TableCell>

@@ -12,6 +12,7 @@ interface AppState {
   addMessage: (message: Message) => void;
   addSuspiciousLog: (log: SuspiciousLog) => void;
   banUser: (userId: string) => void;
+  unbanUser: (userId: string) => void;
   clearChat: () => void;
 }
 
@@ -34,6 +35,11 @@ export const useAppStore = create<AppState>()(
           users: state.users.map(u => u.id === userId ? { ...u, status: 'banned' } : u),
           currentUser: state.currentUser?.id === userId ? { ...state.currentUser, status: 'banned' } : state.currentUser,
           suspiciousLogs: state.suspiciousLogs.map(log => log.user.id === userId ? { ...log, user: { ...log.user, status: 'banned' } } : log)
+      })),
+      unbanUser: (userId: string) => set((state) => ({
+        users: state.users.map(u => u.id === userId ? { ...u, status: 'active' } : u),
+        currentUser: state.currentUser?.id === userId ? { ...state.currentUser, status: 'active' } : state.currentUser,
+        suspiciousLogs: state.suspiciousLogs.map(log => log.user.id === userId ? { ...log, user: { ...log.user, status: 'active' } } : log)
       })),
       clearChat: () => set({ messages: [], suspiciousLogs: [] }),
     }),
