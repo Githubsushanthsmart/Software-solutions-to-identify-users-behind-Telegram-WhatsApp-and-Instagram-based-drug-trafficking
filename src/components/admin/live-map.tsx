@@ -7,7 +7,6 @@ import { useAppStore } from '@/lib/store';
 import { Card } from '@/components/ui/card';
 import { format, parseISO } from 'date-fns';
 import L from 'leaflet';
-import Image from 'next/image';
 
 // Custom icon for the markers
 const redIcon = new L.Icon({
