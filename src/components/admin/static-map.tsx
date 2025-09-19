@@ -8,14 +8,13 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { MapPin } from "lucide-react";
-import { cn } from "@/lib/utils";
 
 const locations = [
-  { name: "Mumbai", top: "70%", left: "28%" },
-  { name: "Hyderabad", top: "77%", left: "42%" },
-  { name: "Goa", top: "80%", left: "32%" },
-  { name: "Bihar", top: "50%", left: "58%" },
-  { name: "Sikkim", top: "45%", left: "65%" },
+  { name: "Mumbai", lat: 19.0760, lon: 72.8777, top: "70%", left: "28%" },
+  { name: "Hyderabad", lat: 17.3850, lon: 78.4867, top: "77%", left: "42%" },
+  { name: "Goa", lat: 15.2993, lon: 74.1240, top: "80%", left: "32%" },
+  { name: "Bihar", lat: 25.5941, lon: 85.1376, top: "50%", left: "58%" },
+  { name: "Sikkim", lat: 27.3389, lon: 88.6065, top: "45%", left: "65%" },
 ];
 
 export function StaticMap() {
@@ -25,10 +24,10 @@ export function StaticMap() {
         <div className="relative w-full h-[calc(100vh-14rem)]">
           <Image
             src="https://picsum.photos/seed/indiamap/1200/900"
-            alt="Map of India"
+            alt="Outline map of India with states"
             fill
             className="object-cover rounded-md"
-            data-ai-hint="india map illustration"
+            data-ai-hint="india map outline states"
           />
           {locations.map((loc) => (
             <Tooltip key={loc.name}>
@@ -39,7 +38,8 @@ export function StaticMap() {
                 <MapPin className="size-8 text-red-500 animate-pulse" strokeWidth={2.5}/>
               </TooltipTrigger>
               <TooltipContent>
-                <p>{loc.name}</p>
+                <p className="font-semibold">{loc.name}</p>
+                <p className="text-sm text-muted-foreground">Lat: {loc.lat}, Lon: {loc.lon}</p>
               </TooltipContent>
             </Tooltip>
           ))}
