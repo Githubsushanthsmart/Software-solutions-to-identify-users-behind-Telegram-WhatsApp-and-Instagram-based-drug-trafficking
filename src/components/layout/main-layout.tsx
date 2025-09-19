@@ -20,6 +20,7 @@ import { Button } from '../ui/button';
 import { LogOut } from 'lucide-react';
 import { UserForm } from '../auth/user-form';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '../ui/dialog';
+import { ThemeToggle } from './theme-toggle';
 
 export default function MainLayout({ children }: { children: React.ReactNode }) {
   const currentUser = useAppStore((state) => state.currentUser);
@@ -47,14 +48,17 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
         </SidebarContent>
         {currentUser && (
           <SidebarFooter>
-            <div className="flex items-center gap-2">
-              <Avatar className="h-8 w-8">
-                <AvatarFallback>{currentUser.name.charAt(0).toUpperCase()}</AvatarFallback>
-              </Avatar>
-              <div className="flex flex-col text-sm">
-                <span className="font-semibold">{currentUser.name}</span>
-                <span className="text-xs text-muted-foreground">{currentUser.email}</span>
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Avatar className="h-8 w-8">
+                  <AvatarFallback>{currentUser.name.charAt(0).toUpperCase()}</AvatarFallback>
+                </Avatar>
+                <div className="flex flex-col text-sm">
+                  <span className="font-semibold">{currentUser.name}</span>
+                  <span className="text-xs text-muted-foreground">{currentUser.email}</span>
+                </div>
               </div>
+              <ThemeToggle />
             </div>
             <Button variant="ghost" size="sm" onClick={handleLogout} className="justify-start gap-2">
               <LogOut className="size-4" />
