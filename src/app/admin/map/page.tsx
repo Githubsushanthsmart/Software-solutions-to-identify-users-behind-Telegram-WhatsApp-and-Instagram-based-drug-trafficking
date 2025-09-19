@@ -1,6 +1,11 @@
 'use client';
 
-import { LiveMap } from '@/components/admin/live-map';
+import dynamic from 'next/dynamic';
+
+const LiveMap = dynamic(() => import('@/components/admin/live-map').then((mod) => mod.LiveMap), {
+  ssr: false,
+  loading: () => <p>Loading map...</p>,
+});
 
 export default function MapPage() {
   return (
