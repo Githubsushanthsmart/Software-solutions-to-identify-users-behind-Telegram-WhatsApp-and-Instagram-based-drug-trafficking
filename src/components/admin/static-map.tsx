@@ -23,7 +23,7 @@ export function StaticMap() {
       <CardContent className="p-2 h-full">
         <div className="relative w-full h-[calc(100vh-14rem)]">
           <Image
-            src="https://i.imgur.com/79rD4s2.jpeg"
+            src="https://i.imgur.com/rS2yv5j.jpeg"
             alt="Detailed map of India with states and cities"
             fill
             className="object-cover rounded-md"
