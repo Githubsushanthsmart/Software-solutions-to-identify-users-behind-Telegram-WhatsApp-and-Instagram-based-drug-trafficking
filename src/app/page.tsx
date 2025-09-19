@@ -1,7 +1,7 @@
 import { Logo } from '@/components/icons/logo';
 import { Button } from '@/components/ui/button';
 import { Card, CardHeader } from '@/components/ui/card';
-import { BrainCircuit, ShieldCheck, Siren } from 'lucide-react';
+import { BrainCircuit, ShieldCheck, Siren, Bot, Map, Mic, UserX, ShieldQuestion, Users } from 'lucide-react';
 import Link from 'next/link';
 import {
   Accordion,
@@ -59,7 +59,7 @@ export default function Home() {
                 <CardHeader className="flex-row items-center gap-4 p-0">
                   <BrainCircuit className="size-10 text-primary" />
                   <div className="text-left">
-                    <h3 className="text-lg font-semibold">NLP & Image Detection</h3>
+                    <h3 className="text-lg font-semibold">NLP &amp; Image Detection</h3>
                     <p className="text-sm text-muted-foreground">Real-time content analysis for text and images.</p>
                   </div>
                 </CardHeader>
@@ -93,13 +93,109 @@ export default function Home() {
                 <CardHeader className="flex-row items-center gap-4 p-0">
                   <ShieldCheck className="size-10 text-primary" />
                   <div className="text-left">
-                    <h3 className="text-lg font-semibold">Secure & Private</h3>
+                    <h3 className="text-lg font-semibold">Secure &amp; Private</h3>
                     <p className="text-sm text-muted-foreground">Encrypted data storage with user privacy in mind.</p>
                   </div>
                 </CardHeader>
               </AccordionTrigger>
               <AccordionContent className="text-muted-foreground pl-16">
                 <p>All flagged content and associated metadata are securely logged in an encrypted database. We prioritize user privacy by focusing only on publicly available data within the platform and ensuring that access to the alert logs is restricted to authorized administrators. Our goal is to maintain platform integrity without compromising user confidentiality.</p>
+                 <Button variant="link" asChild className="p-0 h-auto mt-2">
+                  <Link href="/admin">Learn More</Link>
+                </Button>
+              </AccordionContent>
+            </AccordionItem>
+            <AccordionItem value="item-4">
+              <AccordionTrigger>
+                <CardHeader className="flex-row items-center gap-4 p-0">
+                  <Bot className="size-10 text-primary" />
+                  <div className="text-left">
+                    <h3 className="text-lg font-semibold">AI Model Adaptability</h3>
+                    <p className="text-sm text-muted-foreground">Continuously learning and evolving detection.</p>
+                  </div>
+                </CardHeader>
+              </AccordionTrigger>
+              <AccordionContent className="text-muted-foreground pl-16">
+                <p>The digital landscape and illicit terminologies are constantly changing. Our AI models are designed to be adaptable, allowing for easy updates to the keyword lists and detection logic. This ensures that DrugShield AI stays ahead of new slang and evolving tactics used by malicious actors.</p>
+              </AccordionContent>
+            </AccordionItem>
+            <AccordionItem value="item-5">
+              <AccordionTrigger>
+                <CardHeader className="flex-row items-center gap-4 p-0">
+                  <Map className="size-10 text-primary" />
+                  <div className="text-left">
+                    <h3 className="text-lg font-semibold">Mapping &amp; Network Analysis</h3>
+                    <p className="text-sm text-muted-foreground">Visualize threats and user connections.</p>
+                  </div>
+                </CardHeader>
+              </AccordionTrigger>
+              <AccordionContent className="text-muted-foreground pl-16">
+                <p>Our platform includes a static threat map to visualize the geographic locations of monitored activities. Future versions will incorporate dynamic network analysis to map connections between high-risk users, helping administrators identify organized trafficking networks and understand their structure.</p>
+                 <Button variant="link" asChild className="p-0 h-auto mt-2">
+                  <Link href="/admin/map">Learn More</Link>
+                </Button>
+              </AccordionContent>
+            </AccordionItem>
+            <AccordionItem value="item-6">
+              <AccordionTrigger>
+                <CardHeader className="flex-row items-center gap-4 p-0">
+                  <Mic className="size-10 text-primary" />
+                  <div className="text-left">
+                    <h3 className="text-lg font-semibold">Voice &amp; Audio Analysis</h3>
+                    <p className="text-sm text-muted-foreground">Detecting threats in voice communications.</p>
+                  </div>
+                </CardHeader>
+              </AccordionTrigger>
+              <AccordionContent className="text-muted-foreground pl-16">
+                <p>DrugShield AI goes beyond text and images by analyzing audio messages. It transcribes voice notes into text and scans the transcription for suspicious keywords and phrases. This capability ensures that even spoken conversations are monitored, closing a common loophole for illicit communication.</p>
+              </AccordionContent>
+            </AccordionItem>
+            <AccordionItem value="item-7">
+              <AccordionTrigger>
+                <CardHeader className="flex-row items-center gap-4 p-0">
+                  <Users className="size-10 text-primary" />
+                  <div className="text-left">
+                    <h3 className="text-lg font-semibold">Dashboard Highlights</h3>
+                    <p className="text-sm text-muted-foreground">Identify top offenders at a glance.</p>
+                  </div>
+                </CardHeader>
+              </AccordionTrigger>
+              <AccordionContent className="text-muted-foreground pl-16">
+                <p>The admin dashboard prominently features the "Top 5 High-Risk Users," allowing moderators to quickly focus on the most problematic accounts. This is determined by the frequency and severity of suspicious activity flags, enabling efficient and targeted enforcement actions.</p>
+                 <Button variant="link" asChild className="p-0 h-auto mt-2">
+                  <Link href="/admin">Learn More</Link>
+                </Button>
+              </AccordionContent>
+            </AccordionItem>
+             <AccordionItem value="item-8">
+              <AccordionTrigger>
+                <CardHeader className="flex-row items-center gap-4 p-0">
+                  <ShieldQuestion className="size-10 text-primary" />
+                  <div className="text-left">
+                    <h3 className="text-lg font-semibold">Fake Profile Detection</h3>
+                    <p className="text-sm text-muted-foreground">Identify fraudulent accounts with AI.</p>
+                  </div>
+                </CardHeader>
+              </AccordionTrigger>
+              <AccordionContent className="text-muted-foreground pl-16">
+                <p>Our system uses AI to analyze profile pictures for signs of a fake identity. The model can determine if an image is a stock photo, a picture of a celebrity, or a widely used internet image, helping to uncover bots and fraudulent accounts used for illicit activities.</p>
+                 <Button variant="link" asChild className="p-0 h-auto mt-2">
+                  <Link href="/admin/fake-profiles">Learn More</Link>
+                </Button>
+              </AccordionContent>
+            </AccordionItem>
+             <AccordionItem value="item-9">
+              <AccordionTrigger>
+                <CardHeader className="flex-row items-center gap-4 p-0">
+                  <UserX className="size-10 text-primary" />
+                  <div className="text-left">
+                    <h3 className="text-lg font-semibold">Emergency Ban &amp; Unban</h3>
+                    <p className="text-sm text-muted-foreground">Instantly suspend and reinstate users.</p>
+                  </div>
+                </CardHeader>
+              </AccordionTrigger>
+              <AccordionContent className="text-muted-foreground pl-16">
+                <p>Administrators have the power to take immediate action. The "Emergency Lock Mode" allows an admin to instantly ban or unban a user directly from the dashboard. A banned user is immediately blocked from the chat and sees an account suspension notice, providing a real-time enforcement mechanism.</p>
                  <Button variant="link" asChild className="p-0 h-auto mt-2">
                   <Link href="/admin">Learn More</Link>
                 </Button>
