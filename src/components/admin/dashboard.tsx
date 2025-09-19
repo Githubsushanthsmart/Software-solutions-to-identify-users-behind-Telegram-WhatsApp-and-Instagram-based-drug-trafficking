@@ -14,9 +14,11 @@ import { Input } from '@/components/ui/input';
 import { useAppStore } from '@/lib/store';
 import { format, parseISO } from 'date-fns';
 import { cn } from '@/lib/utils';
-import { AlertTriangle, Calendar, Search, Image as ImageIcon, Mic } from 'lucide-react';
+import { AlertTriangle, Calendar, Search, Image as ImageIcon, Mic, User as UserIcon } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import Image from 'next/image';
+import { User } from '@/lib/types';
+import { Avatar, AvatarFallback } from '../ui/avatar';
 
 export function Dashboard() {
   const suspiciousLogs = useAppStore((state) => state.suspiciousLogs);
@@ -26,6 +28,24 @@ export function Dashboard() {
   const textLogs = useMemo(() => suspiciousLogs.filter(log => log.message), [suspiciousLogs]);
   const imageLogs = useMemo(() => suspiciousLogs.filter(log => log.imageUrl), [suspiciousLogs]);
   const audioLogs = useMemo(() => suspiciousLogs.filter(log => log.audioUrl), [suspiciousLogs]);
+
+  const topHighRiskUsers = useMemo(() => {
+    const userIncidents: { [key: string]: { user: User; count: number } } = {};
+
+    suspiciousLogs.forEach(log => {
+      if(log.user.id === 'admin') return;
+
+      if (userIncidents[log.user.id]) {
+        userIncidents[log.user.id].count++;
+      } else {
+        userIncidents[log.user.id] = { user: log.user, count: 1 };
+      }
+    });
+
+    return Object.values(userIncidents)
+      .sort((a, b) => b.count - a.count)
+      .slice(0, 5);
+  }, [suspiciousLogs]);
 
   const filterLogs = (logs: any[], keys: string[]) => {
      return logs.filter((log) => {
@@ -64,203 +84,241 @@ export function Dashboard() {
   }
 
   return (
-    <Card className="flex-1">
-      <CardHeader>
-        <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-            <div>
-                 <CardTitle className="flex items-center gap-2">
-                    <AlertTriangle className="text-primary" />
-                    Suspicious Activity
-                </CardTitle>
-                <CardDescription>
-                    {suspiciousLogs.length} total incidents flagged.
-                </CardDescription>
+    <div className="flex flex-col gap-6">
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <UserIcon className="text-primary" />
+            Top 5 High-Risk Users
+          </CardTitle>
+          <CardDescription>
+            Users with the highest number of suspicious activity flags.
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          {topHighRiskUsers.length > 0 ? (
+            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-5">
+              {topHighRiskUsers.map(({ user, count }) => (
+                <div key={user.id} className="flex items-center gap-4 rounded-lg bg-muted p-3">
+                  <Avatar>
+                    <AvatarFallback>{user.name.charAt(0).toUpperCase()}</AvatarFallback>
+                  </Avatar>
+                  <div className="flex-1">
+                    <p className="font-semibold truncate">{user.name}</p>
+                    <p className="text-xs text-muted-foreground truncate">{user.email}</p>
+                  </div>
+                  <div className="flex flex-col items-center">
+                    <p className="text-2xl font-bold">{count}</p>
+                    <p className="text-xs text-muted-foreground">Incidents</p>
+                  </div>
+                </div>
+              ))}
             </div>
-          <div className="flex gap-2">
-             <div className="relative">
-                <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-                <Input
-                    placeholder="Filter by user or keyword..."
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    className="w-full pl-8 md:w-64"
-                />
+          ) : (
+            <div className="text-center text-muted-foreground py-4">
+              No high-risk users identified yet.
             </div>
-            <div className="relative">
-                 <Calendar className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-                <Input
-                    type="date"
-                    value={dateFilter}
-                    onChange={(e) => setDateFilter(e.target.value)}
-                    className="w-full pl-8 md:w-auto"
-                />
+          )}
+        </CardContent>
+      </Card>
+      <Card>
+        <CardHeader>
+          <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+              <div>
+                  <CardTitle className="flex items-center gap-2">
+                      <AlertTriangle className="text-primary" />
+                      Suspicious Activity
+                  </CardTitle>
+                  <CardDescription>
+                      {suspiciousLogs.length} total incidents flagged.
+                  </CardDescription>
+              </div>
+            <div className="flex gap-2">
+              <div className="relative">
+                  <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+                  <Input
+                      placeholder="Filter by user or keyword..."
+                      value={searchTerm}
+                      onChange={(e) => setSearchTerm(e.target.value)}
+                      className="w-full pl-8 md:w-64"
+                  />
+              </div>
+              <div className="relative">
+                  <Calendar className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+                  <Input
+                      type="date"
+                      value={dateFilter}
+                      onChange={(e) => setDateFilter(e.target.value)}
+                      className="w-full pl-8 md:w-auto"
+                  />
+              </div>
             </div>
           </div>
-        </div>
-      </CardHeader>
-      <CardContent>
-        <Tabs defaultValue="text">
-          <TabsList className="grid w-full grid-cols-3">
-            <TabsTrigger value="text">
-                <AlertTriangle className="mr-2 size-4" />
-                Text Logs
-            </TabsTrigger>
-            <TabsTrigger value="images">
-                <ImageIcon className="mr-2 size-4" />
-                Image Logs
-            </TabsTrigger>
-             <TabsTrigger value="audio">
-                <Mic className="mr-2 size-4" />
-                Audio Logs
-            </TabsTrigger>
-          </TabsList>
-          <TabsContent value="text" className="mt-4">
-            <div className="overflow-auto rounded-md border">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>User</TableHead>
-                    <TableHead>Suspicious Message</TableHead>
-                    <TableHead>Timestamp</TableHead>
-                    <TableHead className="text-right">Confidence</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {filteredTextLogs.length > 0 ? (
-                    filteredTextLogs.map((log) => (
-                      <TableRow key={log.id}>
-                        <TableCell>
-                          <div className="font-medium">{log.user.name}</div>
-                          <div className="text-sm text-muted-foreground">{log.user.email}</div>
-                          <div className="text-sm text-muted-foreground">{log.user.phone}</div>
-                        </TableCell>
-                        <TableCell>
-                            <p className="max-w-sm truncate">{log.message}</p>
-                        </TableCell>
-                        <TableCell>{format(parseISO(log.timestamp), 'MMM d, yyyy, h:mm a')}</TableCell>
-                        <TableCell className="text-right">
-                          <div className="flex items-center justify-end gap-2">
-                            <div className="w-16 h-2 bg-muted rounded-full">
-                              <div className={cn("h-2 rounded-full", getConfidenceBadgeColor(log.confidenceScore / 100))} style={{width: `${log.confidenceScore}%`}}/>
+        </CardHeader>
+        <CardContent>
+          <Tabs defaultValue="text">
+            <TabsList className="grid w-full grid-cols-3">
+              <TabsTrigger value="text">
+                  <AlertTriangle className="mr-2 size-4" />
+                  Text Logs
+              </TabsTrigger>
+              <TabsTrigger value="images">
+                  <ImageIcon className="mr-2 size-4" />
+                  Image Logs
+              </TabsTrigger>
+              <TabsTrigger value="audio">
+                  <Mic className="mr-2 size-4" />
+                  Audio Logs
+              </TabsTrigger>
+            </TabsList>
+            <TabsContent value="text" className="mt-4">
+              <div className="overflow-auto rounded-md border">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>User</TableHead>
+                      <TableHead>Suspicious Message</TableHead>
+                      <TableHead>Timestamp</TableHead>
+                      <TableHead className="text-right">Confidence</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {filteredTextLogs.length > 0 ? (
+                      filteredTextLogs.map((log) => (
+                        <TableRow key={log.id}>
+                          <TableCell>
+                            <div className="font-medium">{log.user.name}</div>
+                            <div className="text-sm text-muted-foreground">{log.user.email}</div>
+                            <div className="text-sm text-muted-foreground">{log.user.phone}</div>
+                          </TableCell>
+                          <TableCell>
+                              <p className="max-w-sm truncate">{log.message}</p>
+                          </TableCell>
+                          <TableCell>{format(parseISO(log.timestamp), 'MMM d, yyyy, h:mm a')}</TableCell>
+                          <TableCell className="text-right">
+                            <div className="flex items-center justify-end gap-2">
+                              <div className="w-16 h-2 bg-muted rounded-full">
+                                <div className={cn("h-2 rounded-full", getConfidenceBadgeColor(log.confidenceScore / 100))} style={{width: `${log.confidenceScore}%`}}/>
+                              </div>
+                              <span className="font-mono text-sm font-semibold">{log.confidenceScore}%</span>
                             </div>
-                            <span className="font-mono text-sm font-semibold">{log.confidenceScore}%</span>
-                          </div>
+                          </TableCell>
+                        </TableRow>
+                      ))
+                    ) : (
+                      <TableRow>
+                        <TableCell colSpan={4} className="h-24 text-center">
+                          No suspicious text logs found.
                         </TableCell>
                       </TableRow>
-                    ))
-                  ) : (
+                    )}
+                  </TableBody>
+                </Table>
+              </div>
+            </TabsContent>
+            <TabsContent value="images" className="mt-4">
+              <div className="overflow-auto rounded-md border">
+                <Table>
+                  <TableHeader>
                     <TableRow>
-                      <TableCell colSpan={4} className="h-24 text-center">
-                        No suspicious text logs found.
-                      </TableCell>
+                      <TableHead>User</TableHead>
+                      <TableHead>Image Preview</TableHead>
+                      <TableHead>Category</TableHead>
+                      <TableHead>Timestamp</TableHead>
+                      <TableHead className="text-right">Confidence</TableHead>
                     </TableRow>
-                  )}
-                </TableBody>
-              </Table>
-            </div>
-          </TabsContent>
-          <TabsContent value="images" className="mt-4">
-             <div className="overflow-auto rounded-md border">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>User</TableHead>
-                    <TableHead>Image Preview</TableHead>
-                    <TableHead>Category</TableHead>
-                    <TableHead>Timestamp</TableHead>
-                    <TableHead className="text-right">Confidence</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {filteredImageLogs.length > 0 ? (
-                    filteredImageLogs.map((log) => (
-                      <TableRow key={log.id}>
-                        <TableCell>
-                          <div className="font-medium">{log.user.name}</div>
-                          <div className="text-sm text-muted-foreground">{log.user.email}</div>
-                          <div className="text-sm text-muted-foreground">{log.user.phone}</div>
-                        </TableCell>
-                        <TableCell>
-                          {log.imageUrl && (
-                            <Image src={log.imageUrl} alt="Suspicious Content" width={100} height={100} className="rounded-md object-cover" />
-                          )}
-                        </TableCell>
-                        <TableCell>{log.category}</TableCell>
-                        <TableCell>{format(parseISO(log.timestamp), 'MMM d, yyyy, h:mm a')}</TableCell>
-                        <TableCell className="text-right">
-                          <div className="flex items-center justify-end gap-2">
-                             <div className="w-16 h-2 bg-muted rounded-full">
-                              <div className={cn("h-2 rounded-full", getConfidenceBadgeColor(log.confidenceScore))} style={{width: `${getConfidencePercentage(log.confidenceScore)}%`}}/>
+                  </TableHeader>
+                  <TableBody>
+                    {filteredImageLogs.length > 0 ? (
+                      filteredImageLogs.map((log) => (
+                        <TableRow key={log.id}>
+                          <TableCell>
+                            <div className="font-medium">{log.user.name}</div>
+                            <div className="text-sm text-muted-foreground">{log.user.email}</div>
+                            <div className="text-sm text-muted-foreground">{log.user.phone}</div>
+                          </TableCell>
+                          <TableCell>
+                            {log.imageUrl && (
+                              <Image src={log.imageUrl} alt="Suspicious Content" width={100} height={100} className="rounded-md object-cover" />
+                            )}
+                          </TableCell>
+                          <TableCell>{log.category}</TableCell>
+                          <TableCell>{format(parseISO(log.timestamp), 'MMM d, yyyy, h:mm a')}</TableCell>
+                          <TableCell className="text-right">
+                            <div className="flex items-center justify-end gap-2">
+                              <div className="w-16 h-2 bg-muted rounded-full">
+                                <div className={cn("h-2 rounded-full", getConfidenceBadgeColor(log.confidenceScore))} style={{width: `${getConfidencePercentage(log.confidenceScore)}%`}}/>
+                              </div>
+                              <span className="font-mono text-sm font-semibold">{getConfidencePercentage(log.confidenceScore)}%</span>
                             </div>
-                            <span className="font-mono text-sm font-semibold">{getConfidencePercentage(log.confidenceScore)}%</span>
-                          </div>
+                          </TableCell>
+                        </TableRow>
+                      ))
+                    ) : (
+                      <TableRow>
+                        <TableCell colSpan={5} className="h-24 text-center">
+                          No suspicious image logs found.
                         </TableCell>
                       </TableRow>
-                    ))
-                  ) : (
+                    )}
+                  </TableBody>
+                </Table>
+              </div>
+            </TabsContent>
+            <TabsContent value="audio" className="mt-4">
+              <div className="overflow-auto rounded-md border">
+                <Table>
+                  <TableHeader>
                     <TableRow>
-                      <TableCell colSpan={5} className="h-24 text-center">
-                        No suspicious image logs found.
-                      </TableCell>
+                      <TableHead>User</TableHead>
+                      <TableHead>Audio</TableHead>
+                      <TableHead>Transcription</TableHead>
+                      <TableHead>Timestamp</TableHead>
+                      <TableHead className="text-right">Confidence</TableHead>
                     </TableRow>
-                  )}
-                </TableBody>
-              </Table>
-            </div>
-          </TabsContent>
-           <TabsContent value="audio" className="mt-4">
-             <div className="overflow-auto rounded-md border">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>User</TableHead>
-                    <TableHead>Audio</TableHead>
-                    <TableHead>Transcription</TableHead>
-                    <TableHead>Timestamp</TableHead>
-                    <TableHead className="text-right">Confidence</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {filteredAudioLogs.length > 0 ? (
-                    filteredAudioLogs.map((log) => (
-                      <TableRow key={log.id}>
-                        <TableCell>
-                          <div className="font-medium">{log.user.name}</div>
-                          <div className="text-sm text-muted-foreground">{log.user.email}</div>
-                          <div className="text-sm text-muted-foreground">{log.user.phone}</div>
-                        </TableCell>
-                        <TableCell>
-                          {log.audioUrl && (
-                             <audio controls src={log.audioUrl} className="w-64" />
-                          )}
-                        </TableCell>
-                        <TableCell>
-                            <p className="max-w-xs truncate italic">"{log.transcription}"</p>
-                        </TableCell>
-                        <TableCell>{format(parseISO(log.timestamp), 'MMM d, yyyy, h:mm a')}</TableCell>
-                        <TableCell className="text-right">
-                          <div className="flex items-center justify-end gap-2">
-                             <div className="w-16 h-2 bg-muted rounded-full">
-                              <div className={cn("h-2 rounded-full", getConfidenceBadgeColor(log.confidenceScore))} style={{width: `${getConfidencePercentage(log.confidenceScore)}%`}}/>
+                  </TableHeader>
+                  <TableBody>
+                    {filteredAudioLogs.length > 0 ? (
+                      filteredAudioLogs.map((log) => (
+                        <TableRow key={log.id}>
+                          <TableCell>
+                            <div className="font-medium">{log.user.name}</div>
+                            <div className="text-sm text-muted-foreground">{log.user.email}</div>
+                            <div className="text-sm text-muted-foreground">{log.user.phone}</div>
+                          </TableCell>
+                          <TableCell>
+                            {log.audioUrl && (
+                              <audio controls src={log.audioUrl} className="w-64" />
+                            )}
+                          </TableCell>
+                          <TableCell>
+                              <p className="max-w-xs truncate italic">"{log.transcription}"</p>
+                          </TableCell>
+                          <TableCell>{format(parseISO(log.timestamp), 'MMM d, yyyy, h:mm a')}</TableCell>
+                          <TableCell className="text-right">
+                            <div className="flex items-center justify-end gap-2">
+                              <div className="w-16 h-2 bg-muted rounded-full">
+                                <div className={cn("h-2 rounded-full", getConfidenceBadgeColor(log.confidenceScore))} style={{width: `${getConfidencePercentage(log.confidenceScore)}%`}}/>
+                              </div>
+                              <span className="font-mono text-sm font-semibold">{getConfidencePercentage(log.confidenceScore)}%</span>
                             </div>
-                            <span className="font-mono text-sm font-semibold">{getConfidencePercentage(log.confidenceScore)}%</span>
-                          </div>
+                          </TableCell>
+                        </TableRow>
+                      ))
+                    ) : (
+                      <TableRow>
+                        <TableCell colSpan={5} className="h-24 text-center">
+                          No suspicious audio logs found.
                         </TableCell>
                       </TableRow>
-                    ))
-                  ) : (
-                    <TableRow>
-                      <TableCell colSpan={5} className="h-24 text-center">
-                        No suspicious audio logs found.
-                      </TableCell>
-                    </TableRow>
-                  )}
-                </TableBody>
-              </Table>
-            </div>
-          </TabsContent>
-        </Tabs>
-      </CardContent>
-    </Card>
+                    )}
+                  </TableBody>
+                </Table>
+              </div>
+            </TabsContent>
+          </Tabs>
+        </CardContent>
+      </Card>
+    </div>
   );
 }
