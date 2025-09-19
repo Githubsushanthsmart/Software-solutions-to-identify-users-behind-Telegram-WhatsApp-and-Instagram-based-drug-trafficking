@@ -86,7 +86,7 @@ export function Dashboard() {
 
   const filteredTextLogs = useMemo(() => filterLogs(textLogs, ['message']), [textLogs, searchTerm, dateFilter]);
   const filteredImageLogs = useMemo(() => filterLogs(imageLogs, ['category']), [imageLogs, searchTerm, dateFilter]);
-  const filteredAudioLogs = usememo(() => filterLogs(audioLogs, ['transcription']), [audioLogs, searchTerm, dateFilter]);
+  const filteredAudioLogs = useMemo(() => filterLogs(audioLogs, ['transcription']), [audioLogs, searchTerm, dateFilter]);
 
   const getConfidenceBadgeColor = (score: number) => {
     if (score > 0.9) return 'bg-red-500';
