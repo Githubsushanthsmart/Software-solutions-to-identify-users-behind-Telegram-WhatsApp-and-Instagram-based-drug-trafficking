@@ -22,7 +22,7 @@ const locations = [
   { name: 'Bihar (Patna)', position: [25.5941, 85.1376] as [number, number] },
 ];
 
-export default function LiveMap() {
+export default function MapPageClient() {
   const mapCenter: [number, number] = [22.5937, 78.9629];
 
   return (
