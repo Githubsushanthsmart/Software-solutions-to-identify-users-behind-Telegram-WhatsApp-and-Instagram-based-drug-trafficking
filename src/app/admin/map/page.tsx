@@ -1,12 +1,6 @@
 'use client';
 
 import { LiveMap } from '@/components/admin/live-map';
-import dynamic from 'next/dynamic';
-
-const DynamicMap = dynamic(() => import('@/components/admin/live-map').then(mod => mod.LiveMap), {
-  ssr: false,
-  loading: () => <p>Loading map...</p>,
-});
 
 export default function MapPage() {
   return (
@@ -17,7 +11,7 @@ export default function MapPage() {
           Real-time locations of suspicious activity detections.
         </p>
       </div>
-      <DynamicMap />
+      <LiveMap />
     </div>
   );
 }
