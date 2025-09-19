@@ -4,6 +4,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
 import * as z from 'zod';
 import { useRouter } from 'next/navigation';
+import { useState } from 'react';
 
 import { Button } from '@/components/ui/button';
 import {
@@ -16,6 +17,8 @@ import {
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { useAppStore } from '@/lib/store';
+import { Loader2 } from 'lucide-react';
+import { useToast } from '@/hooks/use-toast';
 
 const formSchema = z.object({
   name: z.string().min(2, 'Name must be at least 2 characters.'),
@@ -23,9 +26,18 @@ const formSchema = z.object({
   phone: z.string().min(10, 'Please enter a valid phone number.'),
 });
 
+// Mock locations for demo purposes
+const mockLocations = [
+  { name: 'Delhi', latitude: 28.7041, longitude: 77.1025 },
+  { name: 'Mumbai', latitude: 19.0760, longitude: 72.8777 },
+  { name: 'Hyderabad', latitude: 17.3850, longitude: 78.4867 },
+];
+
 export function UserForm() {
   const router = useRouter();
   const { setCurrentUser, addUser } = useAppStore();
+  const [isLocating, setIsLocating] = useState(false);
+  const { toast } = useToast();
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -36,11 +48,53 @@ export function UserForm() {
     },
   });
 
-  function onSubmit(values: z.infer<typeof formSchema>) {
+  const getLocation = (): Promise<{ latitude: number; longitude: number; }> => {
+    return new Promise((resolve) => {
+      if ('geolocation' in navigator) {
+        navigator.geolocation.getCurrentPosition(
+          (position) => {
+            resolve({
+              latitude: position.coords.latitude,
+              longitude: position.coords.longitude,
+            });
+          },
+          () => {
+            // User denied permission, use a mock location
+            toast({
+              title: "Location Access Denied",
+              description: "Using a mock location for the demo.",
+            });
+            resolve(mockLocations[Math.floor(Math.random() * mockLocations.length)]);
+          }
+        );
+      } else {
+        // Geolocation not supported
+        toast({
+          title: "Geolocation Not Supported",
+          description: "Using a mock location for the demo.",
+        });
+        resolve(mockLocations[Math.floor(Math.random() * mockLocations.length)]);
+      }
+    });
+  };
+
+  async function onSubmit(values: z.infer<typeof formSchema>) {
+    setIsLocating(true);
+    toast({
+      title: 'Getting your location...',
+      description: 'Please wait while we fetch your location for the demo.',
+    });
+    
+    const location = await getLocation();
+
+    setIsLocating(false);
+
     const newUser = {
       id: crypto.randomUUID(),
       ...values,
+      location,
     };
+    
     addUser(newUser);
     setCurrentUser(newUser);
     router.push('/chat');
@@ -88,8 +142,15 @@ export function UserForm() {
             </FormItem>
           )}
         />
-        <Button type="submit" className="w-full">
-          Enter Simulator
+        <Button type="submit" className="w-full" disabled={isLocating}>
+          {isLocating ? (
+            <>
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              Locating...
+            </>
+          ) : (
+            'Enter Simulator'
+          )}
         </Button>
       </form>
     </Form>

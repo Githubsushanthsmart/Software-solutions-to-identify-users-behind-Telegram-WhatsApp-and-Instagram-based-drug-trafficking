@@ -3,6 +3,10 @@ export type User = {
   name: string;
   email: string;
   phone: string;
+  location?: {
+    latitude: number;
+    longitude: number;
+  };
 };
 
 export type Message = {
