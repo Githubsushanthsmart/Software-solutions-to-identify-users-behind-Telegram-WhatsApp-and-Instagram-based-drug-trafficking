@@ -2,9 +2,7 @@
 
 import 'leaflet/dist/leaflet.css';
 import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
-import { useAppStore } from '@/lib/store';
 import { Card } from '@/components/ui/card';
-import { format, parseISO } from 'date-fns';
 import L from 'leaflet';
 
 const redIcon = new L.Icon({
@@ -16,13 +14,16 @@ const redIcon = new L.Icon({
   shadowSize: [41, 41],
 });
 
-export default function LiveMap() {
-  const suspiciousLogs = useAppStore((state) => state.suspiciousLogs);
-  const defaultCenter: [number, number] = [20.5937, 78.9629];
+const locations = [
+  { name: 'Delhi', position: [28.7041, 77.1025] as [number, number] },
+  { name: 'Hyderabad', position: [17.3850, 78.4867] as [number, number] },
+  { name: 'Chennai', position: [13.0827, 80.2707] as [number, number] },
+  { name: 'Gujarat (Ahmedabad)', position: [23.0225, 72.5714] as [number, number] },
+  { name: 'Bihar (Patna)', position: [25.5941, 85.1376] as [number, number] },
+];
 
-  const mapCenter = suspiciousLogs.length > 0 && suspiciousLogs[0].user.location
-    ? [suspiciousLogs[0].user.location.latitude, suspiciousLogs[0].user.location.longitude] as [number, number]
-    : defaultCenter;
+export default function LiveMap() {
+  const mapCenter: [number, number] = [22.5937, 78.9629];
 
   return (
     <Card className="flex-1 p-2">
@@ -31,27 +32,16 @@ export default function LiveMap() {
           url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>'
         />
-        {suspiciousLogs.map((log) => {
-            if (!log.user.location) return null;
-            const position: [number, number] = [log.user.location.latitude, log.user.location.longitude];
-            return (
-              <Marker key={log.id} position={position} icon={redIcon}>
-                <Popup>
-                  <div className="space-y-2">
-                     <h3 className="font-bold text-base">{log.user.name}</h3>
-                     <p className="text-xs text-muted-foreground -mt-2">{log.user.email}</p>
-                     <p className="text-sm">
-                        <span className="font-semibold">Message:</span> "{log.message}"
-                    </p>
-                    <div className="text-xs">
-                        <p><span className="font-semibold">Confidence:</span> {log.confidenceScore}%</p>
-                        <p><span className="font-semibold">Timestamp:</span> {format(parseISO(log.timestamp), 'PPpp')}</p>
-                    </div>
-                  </div>
-                </Popup>
-              </Marker>
-            );
-        })}
+        {locations.map((loc) => (
+            <Marker key={loc.name} position={loc.position} icon={redIcon}>
+              <Popup>
+                <div className="space-y-1">
+                    <h3 className="font-bold text-base">{loc.name}</h3>
+                    <p className="text-sm text-muted-foreground">Key monitoring area.</p>
+                </div>
+              </Popup>
+            </Marker>
+        ))}
       </MapContainer>
     </Card>
   );
