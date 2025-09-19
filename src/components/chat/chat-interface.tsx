@@ -15,6 +15,7 @@ import { useToast } from '@/hooks/use-toast';
 import { User, SuspiciousLog, Message } from '@/lib/types';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
+import { drugKeywords } from '@/lib/keywords';
 
 export function ChatInterface() {
   const [newMessage, setNewMessage] = useState('');
@@ -156,9 +157,8 @@ export function ChatInterface() {
   const handleSendTextMessage = async (text: string) => {
     if (!currentUser) return;
 
-    // This is a mock analysis for text messages
-    const isSuspicious = (text.toLowerCase().includes("buy") && text.toLowerCase().includes("drugs"))
-      || text.toLowerCase().includes("pills");
+    const lowerCaseText = text.toLowerCase();
+    const isSuspicious = drugKeywords.some(keyword => lowerCaseText.includes(keyword));
     
     const message: Message = {
       id: crypto.randomUUID(),
