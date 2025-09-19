@@ -58,7 +58,6 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
                   <span className="text-xs text-muted-foreground">{currentUser.email}</span>
                 </div>
               </div>
-              <ThemeToggle />
             </div>
             <Button variant="ghost" size="sm" onClick={handleLogout} className="justify-start gap-2">
               <LogOut className="size-4" />
@@ -75,6 +74,7 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
                     {/* Could be dynamic based on page */}
                 </h1>
             </div>
+            <ThemeToggle />
         </header>
         <main className="flex-1 p-4 md:p-6">
           {!currentUser ? (

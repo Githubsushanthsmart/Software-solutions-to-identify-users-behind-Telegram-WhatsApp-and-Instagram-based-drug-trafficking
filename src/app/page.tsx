@@ -9,6 +9,7 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from '@/components/ui/accordion';
+import { ThemeToggle } from '@/components/layout/theme-toggle';
 
 export default function Home() {
   return (
@@ -23,6 +24,7 @@ export default function Home() {
           <Link href="/chat" className="text-sm font-medium hover:text-primary transition-colors">Demo</Link>
           <Link href="/admin" className="text-sm font-medium hover:text-primary transition-colors">Dashboard</Link>
           <Link href="/about" className="text-sm font-medium hover:text-primary transition-colors">About</Link>
+          <ThemeToggle />
         </nav>
       </header>
       <main className="flex-1">
