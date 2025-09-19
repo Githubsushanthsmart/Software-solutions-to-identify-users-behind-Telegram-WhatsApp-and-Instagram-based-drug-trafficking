@@ -49,7 +49,7 @@ export function Dashboard() {
         <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
             <div>
                  <CardTitle className="flex items-center gap-2">
-                    <AlertTriangle className="text-accent" />
+                    <AlertTriangle className="text-primary" />
                     Suspicious Activity Logs
                 </CardTitle>
                 <CardDescription>
