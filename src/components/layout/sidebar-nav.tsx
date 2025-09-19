@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { MessageSquare, ShieldAlert, FileText, Info, Map } from 'lucide-react';
+import { MessageSquare, ShieldAlert, FileText, Info, Map, ShieldQuestion } from 'lucide-react';
 import {
   SidebarMenu,
   SidebarMenuItem,
@@ -13,6 +13,7 @@ const navItems = [
   { href: '/chat', label: 'Chat Simulator', icon: MessageSquare },
   { href: '/admin', label: 'Admin Dashboard', icon: ShieldAlert },
   { href: '/admin/map', label: 'Static Map', icon: Map },
+  { href: '/admin/fake-profiles', label: 'Fake Profiles', icon: ShieldQuestion },
   { href: '/about', label: 'About', icon: Info },
 ];
 
