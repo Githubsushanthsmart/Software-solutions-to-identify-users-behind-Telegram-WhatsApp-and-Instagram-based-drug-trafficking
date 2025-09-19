@@ -1,3 +1,5 @@
+'use client';
+
 import { LiveMap } from '@/components/admin/live-map';
 import dynamic from 'next/dynamic';
 
