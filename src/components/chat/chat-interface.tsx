@@ -7,7 +7,7 @@ import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useAppStore } from '@/lib/store';
 import { cn } from '@/lib/utils';
-import { SendHorizonal, AlertTriangle, Paperclip, X, Loader2, Mic, StopCircle, Trash2 } from 'lucide-react';
+import { SendHorizonal, AlertTriangle, Paperclip, X, Loader2, Mic, StopCircle, Trash2, ShieldBan } from 'lucide-react';
 import { createAlertForSuspiciousActivity } from '@/app/actions';
 import { analyzeImage } from '@/ai/flows/analyze-image-flow';
 import { analyzeAudio } from '@/ai/flows/analyze-audio-flow';
@@ -135,7 +135,7 @@ export function ChatInterface() {
   };
   
   const handleSendMessage = async () => {
-    if ((!newMessage.trim() && !imageFile && !audioBlob) || !currentUser) return;
+    if ((!newMessage.trim() && !imageFile && !audioBlob) || !currentUser || currentUser.status === 'banned') return;
     
     if (imageFile && imagePreview) {
       await handleSendImageMessage(imagePreview);
@@ -254,7 +254,7 @@ export function ChatInterface() {
     const message: Message = {
       id: crypto.randomUUID(),
       audioUrl: audioDataUri,
-      timestamp: new Date().toISOString(),
+      timestamp: newtoISOString(),
       userId: currentUser.id,
       isSuspicious: analysis.isSuspicious,
       transcription: analysis.transcription,
@@ -288,7 +288,20 @@ export function ChatInterface() {
   }
 
   return (
-    <div className="flex flex-1 flex-col rounded-lg border bg-card shadow-sm">
+    <div className="flex flex-1 flex-col rounded-lg border bg-card shadow-sm relative">
+      {currentUser.status === 'banned' && (
+        <div className="absolute inset-0 z-10 flex flex-col items-center justify-center gap-4 bg-background/90 backdrop-blur-sm">
+          <ShieldBan className="size-24 text-red-500 animate-pulse" />
+          <div className="text-center">
+            <h2 className="text-2xl font-bold text-red-500">Account Suspended</h2>
+            <p className="text-muted-foreground">
+              Your account has been suspended due to suspicious activity.
+              <br />
+              Please contact support for review.
+            </p>
+          </div>
+        </div>
+      )}
       <ScrollArea className="flex-1 p-4" ref={scrollAreaRef}>
         <div className="space-y-4">
           {messages.map((msg) => {
@@ -374,7 +387,7 @@ export function ChatInterface() {
             onChange={(e) => setNewMessage(e.target.value)}
             onKeyDown={(e) => e.key === 'Enter' && !e.shiftKey && handleSendMessage()}
             className="pr-32"
-            disabled={isAnalyzing || isRecording || !!imagePreview || !!audioUrl}
+            disabled={isAnalyzing || isRecording || !!imagePreview || !!audioUrl || currentUser.status === 'banned'}
           />
           <div className="absolute right-1 top-1/2 flex h-8 -translate-y-1/2">
             <Button
@@ -382,7 +395,7 @@ export function ChatInterface() {
               size="icon"
               variant="ghost"
               onClick={isRecording ? stopRecording : startRecording}
-              disabled={isAnalyzing || !!imagePreview || !!newMessage}
+              disabled={isAnalyzing || !!imagePreview || !!newMessage || currentUser.status === 'banned'}
               className={cn(isRecording && "text-red-500 hover:text-red-600")}
             >
               {isRecording ? <StopCircle className="h-4 w-4" /> : <Mic className="h-4 w-4" />}
@@ -393,7 +406,7 @@ export function ChatInterface() {
               size="icon"
               variant="ghost"
               onClick={() => fileInputRef.current?.click()}
-              disabled={isAnalyzing || isRecording || !!audioUrl}
+              disabled={isAnalyzing || isRecording || !!audioUrl || currentUser.status === 'banned'}
             >
               <Paperclip className="h-4 w-4" />
               <span className="sr-only">Attach image</span>
@@ -403,7 +416,7 @@ export function ChatInterface() {
               type="submit"
               size="icon"
               onClick={handleSendMessage}
-              disabled={(!newMessage.trim() && !imageFile && !audioBlob) || isAnalyzing || isRecording}
+              disabled={(!newMessage.trim() && !imageFile && !audioBlob) || isAnalyzing || isRecording || currentUser.status === 'banned'}
             >
               {isAnalyzing ? <Loader2 className="h-4 w-4 animate-spin"/> : <SendHorizonal className="h-4 w-4" />}
               <span className="sr-only">Send</span>

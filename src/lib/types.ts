@@ -3,6 +3,7 @@ export type User = {
   name: string;
   email: string;
   phone: string;
+  status: 'active' | 'banned';
   location?: {
     latitude: number;
     longitude: number;

@@ -92,6 +92,7 @@ export function UserForm() {
     const newUser = {
       id: crypto.randomUUID(),
       ...values,
+      status: 'active' as const,
       location,
     };
     

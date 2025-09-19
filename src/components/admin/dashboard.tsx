@@ -10,20 +10,24 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useAppStore } from '@/lib/store';
 import { format, parseISO } from 'date-fns';
 import { cn } from '@/lib/utils';
-import { AlertTriangle, Calendar, Search, Image as ImageIcon, Mic, User as UserIcon } from 'lucide-react';
+import { AlertTriangle, Calendar, Search, Image as ImageIcon, Mic, User as UserIcon, ShieldBan } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import Image from 'next/image';
 import { User } from '@/lib/types';
 import { Avatar, AvatarFallback } from '../ui/avatar';
+import { Badge } from '../ui/badge';
+import { useToast } from '@/hooks/use-toast';
 
 export function Dashboard() {
-  const suspiciousLogs = useAppStore((state) => state.suspiciousLogs);
+  const { suspiciousLogs, banUser, users } = useAppStore();
   const [searchTerm, setSearchTerm] = useState('');
   const [dateFilter, setDateFilter] = useState('');
+  const { toast } = useToast();
 
   const textLogs = useMemo(() => suspiciousLogs.filter(log => log.message), [suspiciousLogs]);
   const imageLogs = useMemo(() => suspiciousLogs.filter(log => log.imageUrl), [suspiciousLogs]);
@@ -46,6 +50,18 @@ export function Dashboard() {
       .sort((a, b) => b.count - a.count)
       .slice(0, 5);
   }, [suspiciousLogs]);
+  
+  const handleBanUser = (user: User) => {
+    if (user.id === 'admin') {
+      toast({ variant: 'destructive', title: 'Error', description: 'Cannot ban an admin user.' });
+      return;
+    }
+    banUser(user.id);
+    toast({
+      title: 'User Banned',
+      description: `${user.name} has been suspended and can no longer send messages.`,
+    });
+  }
 
   const filterLogs = (logs: any[], keys: string[]) => {
      return logs.filter((log) => {
@@ -70,7 +86,7 @@ export function Dashboard() {
 
   const filteredTextLogs = useMemo(() => filterLogs(textLogs, ['message']), [textLogs, searchTerm, dateFilter]);
   const filteredImageLogs = useMemo(() => filterLogs(imageLogs, ['category']), [imageLogs, searchTerm, dateFilter]);
-  const filteredAudioLogs = useMemo(() => filterLogs(audioLogs, ['transcription']), [audioLogs, searchTerm, dateFilter]);
+  const filteredAudioLogs = usememo(() => filterLogs(audioLogs, ['transcription']), [audioLogs, searchTerm, dateFilter]);
 
   const getConfidenceBadgeColor = (score: number) => {
     if (score > 0.9) return 'bg-red-500';
@@ -81,6 +97,35 @@ export function Dashboard() {
   const getConfidencePercentage = (score: number) => {
     // text log scores are 0-100, image/audio are 0-1
     return score > 1 ? score : Math.round(score * 100);
+  }
+  
+  const UserInfoCell = ({ user }: { user: User }) => {
+    const fullUser = users.find(u => u.id === user.id) || user;
+    
+    return (
+       <TableCell>
+        <div className="font-medium">{fullUser.name}</div>
+        <div className="text-sm text-muted-foreground">{fullUser.email}</div>
+        <div className="text-sm text-muted-foreground">{fullUser.phone}</div>
+        <div className="mt-2 flex gap-2 items-center">
+            {fullUser.status === 'banned' ? (
+                <Badge variant="destructive" className="gap-1"> <ShieldBan className="size-3" /> Banned</Badge>
+            ) : (
+                <Badge variant="secondary">Active</Badge>
+            )}
+            <Button 
+                variant="destructive" 
+                size="sm" 
+                className="h-7"
+                onClick={() => handleBanUser(fullUser)}
+                disabled={fullUser.status === 'banned'}
+            >
+                <ShieldBan className="mr-1 size-3"/>
+                Ban User
+            </Button>
+        </div>
+      </TableCell>
+    )
   }
 
   return (
@@ -186,11 +231,7 @@ export function Dashboard() {
                     {filteredTextLogs.length > 0 ? (
                       filteredTextLogs.map((log) => (
                         <TableRow key={log.id}>
-                          <TableCell>
-                            <div className="font-medium">{log.user.name}</div>
-                            <div className="text-sm text-muted-foreground">{log.user.email}</div>
-                            <div className="text-sm text-muted-foreground">{log.user.phone}</div>
-                          </TableCell>
+                          <UserInfoCell user={log.user} />
                           <TableCell>
                               <p className="max-w-sm truncate">{log.message}</p>
                           </TableCell>
@@ -232,11 +273,7 @@ export function Dashboard() {
                     {filteredImageLogs.length > 0 ? (
                       filteredImageLogs.map((log) => (
                         <TableRow key={log.id}>
-                          <TableCell>
-                            <div className="font-medium">{log.user.name}</div>
-                            <div className="text-sm text-muted-foreground">{log.user.email}</div>
-                            <div className="text-sm text-muted-foreground">{log.user.phone}</div>
-                          </TableCell>
+                          <UserInfoCell user={log.user} />
                           <TableCell>
                             {log.imageUrl && (
                               <Image src={log.imageUrl} alt="Suspicious Content" width={100} height={100} className="rounded-md object-cover" />
@@ -281,11 +318,7 @@ export function Dashboard() {
                     {filteredAudioLogs.length > 0 ? (
                       filteredAudioLogs.map((log) => (
                         <TableRow key={log.id}>
-                          <TableCell>
-                            <div className="font-medium">{log.user.name}</div>
-                            <div className="text-sm text-muted-foreground">{log.user.email}</div>
-                            <div className="text-sm text-muted-foreground">{log.user.phone}</div>
-                          </TableCell>
+                           <UserInfoCell user={log.user} />
                           <TableCell>
                             {log.audioUrl && (
                               <audio controls src={log.audioUrl} className="w-64" />
