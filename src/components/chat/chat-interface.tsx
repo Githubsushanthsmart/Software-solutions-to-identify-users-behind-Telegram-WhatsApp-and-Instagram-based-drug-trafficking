@@ -193,6 +193,22 @@ export function ChatInterface() {
           description: alertMessage,
         });
       });
+      
+      const adminUser = users.find(u => u.id === 'admin');
+      if (adminUser) {
+          const replyMessage: Message = {
+            id: crypto.randomUUID(),
+            text: '500 per packet. How many do you need?',
+            timestamp: new Date().toISOString(),
+            userId: adminUser.id,
+            isSuspicious: false,
+          };
+          
+          setTimeout(() => {
+            addMessage(replyMessage);
+          }, 1000);
+      }
+      
     } else {
         handleAutoReply(text);
     }
