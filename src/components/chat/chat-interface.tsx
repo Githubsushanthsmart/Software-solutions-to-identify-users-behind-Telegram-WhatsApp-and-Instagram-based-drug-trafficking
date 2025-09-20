@@ -154,6 +154,14 @@ export function ChatInterface() {
     clearAudio();
   };
 
+  const handleAutoBan = (user: User) => {
+    toast({
+        variant: "destructive",
+        title: "User Auto-Banned",
+        description: `${user.name} has been automatically banned after 10 suspicious messages.`,
+    });
+  };
+
   const handleSendTextMessage = async (text: string) => {
     if (!currentUser) return;
 
@@ -179,7 +187,7 @@ export function ChatInterface() {
         timestamp: message.timestamp,
         confidenceScore: confidenceScore,
       };
-      addSuspiciousLog(log);
+      addSuspiciousLog(log, handleAutoBan);
 
       toast({
         variant: "destructive",
@@ -241,7 +249,7 @@ export function ChatInterface() {
         confidenceScore: analysis.confidenceScore,
         category: analysis.category,
       };
-      addSuspiciousLog(log);
+      addSuspiciousLog(log, handleAutoBan);
 
       toast({
         variant: "destructive",
@@ -288,7 +296,7 @@ export function ChatInterface() {
         confidenceScore: analysis.confidenceScore,
         transcription: analysis.transcription
       };
-      addSuspiciousLog(log);
+      addSuspiciousLog(log, handleAutoBan);
       
       toast({
         variant: "destructive",

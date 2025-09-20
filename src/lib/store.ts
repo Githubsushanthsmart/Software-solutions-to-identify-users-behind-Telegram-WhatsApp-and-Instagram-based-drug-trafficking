@@ -10,15 +10,17 @@ interface AppState {
   setCurrentUser: (user: User | null) => void;
   addUser: (user: User) => void;
   addMessage: (message: Message) => void;
-  addSuspiciousLog: (log: SuspiciousLog) => void;
+  addSuspiciousLog: (log: SuspiciousLog, onAutoBan?: (user: User) => void) => void;
   banUser: (userId: string) => void;
   unbanUser: (userId: string) => void;
   clearChat: () => void;
 }
 
+const AUTO_BAN_THRESHOLD = 10;
+
 export const useAppStore = create<AppState>()(
   persist(
-    (set) => ({
+    (set, get) => ({
       currentUser: null,
       users: [
         { id: 'admin', name: 'Admin', email: 'admin@drugshield.ai', phone: 'N/A', status: 'active' }
@@ -28,9 +30,24 @@ export const useAppStore = create<AppState>()(
       setCurrentUser: (user) => set({ currentUser: user }),
       addUser: (user) => set((state) => ({ users: [...state.users, user] })),
       addMessage: (message) => set((state) => ({ messages: [...state.messages, message] })),
-      addSuspiciousLog: (log) => set((state) => ({
-        suspiciousLogs: [...state.suspiciousLogs, log].sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())
-      })),
+      addSuspiciousLog: (log, onAutoBan) => {
+        const { suspiciousLogs, banUser } = get();
+        const updatedLogs = [...suspiciousLogs, log].sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
+        
+        const userLogCount = updatedLogs.filter(l => l.user.id === log.user.id).length;
+        
+        set({ suspiciousLogs: updatedLogs });
+
+        if (userLogCount >= AUTO_BAN_THRESHOLD && log.user.status === 'active') {
+          banUser(log.user.id);
+          if (onAutoBan) {
+            const bannedUser = get().users.find(u => u.id === log.user.id);
+            if(bannedUser) {
+               onAutoBan(bannedUser);
+            }
+          }
+        }
+      },
       banUser: (userId) => set((state) => ({
           users: state.users.map(u => u.id === userId ? { ...u, status: 'banned' } : u),
           currentUser: state.currentUser?.id === userId ? { ...state.currentUser, status: 'banned' } : state.currentUser,
